@@ -6,6 +6,7 @@ Project version: 1.0
 Runtime environment: ...... 
 Licence: [Must be either "Public domain" or "LGPL"]
 ```
+See the [changelog](CHANGELOG.md).
 
 Project description
 -------------------
@@ -49,4 +50,7 @@ Fill in as needed
 
 See also
 --------
+
+* [QueueMetrics home page](http://queuemetrics.com)
+
 Fill in as needed
