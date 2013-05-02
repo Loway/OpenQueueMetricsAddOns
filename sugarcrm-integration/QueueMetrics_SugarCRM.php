@@ -12,7 +12,7 @@
     //
     // Project  : SugarCRM Integration
     // Author(s): Marco Signorini
-    // Licence  : LGPL or Public Domain
+    // Licence  : LGPL
     // =============================================================================
 
     // Customize the variables below

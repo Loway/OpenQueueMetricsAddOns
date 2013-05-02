@@ -1,5 +1,5 @@
-Sample QueueMetrics add-on project
-==================================
+QueueMetrics and SugarCRM Integration add-on project
+====================================================
 
 ```
 Project version: 1.0 
