@@ -5,6 +5,9 @@ A set of community-contributed scripts for QueueMetrics. This project was origin
 
 The following projects are hosted:
 
+### The Flantel qmon.php wallboard - Version 1.0 
+This is the original script, and a QM users' all-time favourite. Might need some
+patching to work with recent versions of QM.
 ### Qloaderd monitor - Version 1.0 
 A script to be run nightly that will notify the sysadmin of the errors encountered in the Qloader's log file.
 ### Count Agents - Version 1.0 
