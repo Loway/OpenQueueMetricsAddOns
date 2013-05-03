@@ -1,10 +1,9 @@
 <?php 
 /*
-  qmon.php 
   Author: Barry Flanagan <barry AT flantel DOT com>
   Date: 21 Nov 2007
   
-  Copyright 2007 Barry Flanagan, but feel free :-)
+  Copyright 2007-2011 Barry Flanagan, but feel free :-)
   
   Small script to grab the calls waiting and Agent information for a given queue from the QueueMetrics XML-RPC service and 
   create a simple display for use on a wallboard.
@@ -14,51 +13,83 @@
   This has proved useful in a large callcentre where the standard QM RT monitoring screen is too detailed and hard to see 
   from a distance. 
   
-  To use, simply define the queues you want to monitor as $queueid, and set the QM ROBOT user and PASS, as well as the IP 
-  address of your QM server
+  To use, simply define the queues you want to monitor as $queueids in the switch statement, give the queuegroups a name
+  and set the $ROBOT_USER user and $PASSWORD, as well as the IP address of your QM server
+
+  Call as http://<your web server>/wallboard.php?queue=<queuegroup> - you can add other parameters; see the _GETs below
+
+  and set the $ROBOT_USER user and $PASSWORD, as well as the IP address of your QM server
+
+ This script relies on Outbound queues to be names in QM as *-Outbound, so that we can optionally display or not display the actual outbound queue.
+
+ QM Sub-queues are supported, and rely on a naming convention in QM such as "Master queue.sub queue" - 
+ i.e. the name for the queue is made up of the Mater queue name, followed by a period followed by the sub queue name. If this convention is 
+ followed, then you will get a single wallboard column for the Maste Queue, rather than a column for each and every subqueue.
 
 */
 
-// Set which queue you want to default to when none is specified 
-$defaultqueue = 'verification';
-
-// Allow seting of the queue to monitor, and the refresh time.
-isset($_REQUEST['refresh'])?$refresh = $_REQUEST['refresh']:$refresh=120;
-isset($_REQUEST['queue'])?$queuereq = $_REQUEST['queue']:$queuereq=$defaultqueue;
-
-// Depending on which queue was requested, set $queueid for passing to queuemetrics.
-switch ($queuereq) {
-  case 'verification':
-    $queueid = "301|310|311|312";
-    $queuename='Dublin Verification';
-    break ;;
-  case 'inbound':
-    $queueid = "401|402|403|404|405|406|407|408|409|410|411|412";
-    $queuename='Inbound';
-    break;;
-  case 'outbound':
-    $queueid = "Outbound";
-    $queuename='Outbound';
-    break ;;
-}
-
-
-// Set up the XML-RPC instance.
 require_once 'XML/RPC.php';
+$ROBOT_USER="CHANGEME";
+$PASSWORD="CHANGEME";
 $qm_server = "127.0.0.1"; // the QueueMetrics server address
 $qm_port   = "8080";        // the port QueueMetrics is running on
 $qm_webapp = "queuemetrics"; // the webapp name for QueueMetrics
 
+isset($_GET['refresh'])?$refresh = $_GET['refresh']:$refresh=5; // how often to refresh the page
+isset($_GET['queue'])?$queuegroup = $_GET['queue']:$queuegroup='inbound'; // Which queue group to display (see switch statement below)
+isset($_GET['showstatus'])?$showstatus = $_GET['showstatus']:$showstatus=1; // Whether to show the Agent Status for a queue group
+isset($_GET['showcurrcalls'])?$showcurrcalls = $_GET['showcurrcalls']:$showcurrcalls=1; // Whether to show the Current Calls for a queue group
+isset($_GET['showout'])?$showoutbound = $_GET['showout']:$showoutbound=1; //Whether to show the Outbound queue as a separate column for a queue group
+
+$useSubqueues = true;
+
+switch ($queuegroup) {
+  case 'inbound':
+    $queueids = "302|303|304|305|310|311|312";
+    $queuename='Inbound';
+  break;;
+    
+  case 'sales':
+    $queueids = "408|409|410|411|414|Sales-Outbound";
+    $outboundqueue = 'Sales-Outbound';
+    $queuename='Sales';
+    $showstatus=1;
+    $showcurrcalls=1;
+    $showoutbound=1;
+  break;;
+  
+  case 'techsupp':
+    $queueids = "519|519.*|521|521.*|522|526|526.*|528|528.*|551|567|567.*|TechSupp-Outbound|430|530";
+    $showoutbound = 0;
+    $outboundqueue = 'TechSupp-Outbound';
+    $queuename='Technical Support';
+  break;;
+
+}
+
+?>
+<html><head><meta http-equiv="refresh" content="<?php echo $refresh ?>"><title><?php echo $queuename . " Wallboard" ?></title></head><body marginheight=0 marginwidth=0>
+<table width="100%" cellpadding=0 cellspacing=0 border="0">
+  <tr>
+<?php
+
+
+
+$queuelist = array_merge(explode("|", $queueids),explode("|",$outboundqueue));
+
 $req_blocks_rt = new XML_RPC_Value(array(
-                 new XML_RPC_Value("RealtimeDO.RTRiassunto"),
-                 new XML_RPC_Value("RealtimeDO.RTCallsBeingProc"),
-                 new  XML_RPC_Value("RealtimeDO.RTAgentsLoggedIn")
-                 ), "array");
-// general invocation parameters. Set the USER and PASSWORD to a QM user ith ROBOT key
+      new XML_RPC_Value("RealtimeDO.RTCallsBeingProc"),
+      new  XML_RPC_Value("RealtimeDO.RTAgentsLoggedIn"),
+      new XML_RPC_Value("RealtimeDO.RTRiassunto")
+           ), "array");
+
+// First we need to get the number of ready agents for the common queues. This is a bug in QM as it will report 
+// an agent as free in one queue even if they are on a call in another.
+
 $params_rt = array(
-     new XML_RPC_Value($queueid),
-           new XML_RPC_Value("USER"),
-           new XML_RPC_Value("PASSWORD"),
+     new XML_RPC_Value($queueids),
+           new XML_RPC_Value($ROBOT_USER), 
+           new XML_RPC_Value($PASSWORD), 
            new XML_RPC_Value(""),
            new XML_RPC_Value(""),
            $req_blocks_rt
@@ -77,34 +108,152 @@ if ($resp_rt->faultCode()) {
 } else {
     $val_rt = $resp_rt->value();
     $blocks_rt = XML_RPC_decode($val_rt);
-
+    
     // now we decode the results
-    $queue = getQueueStatus( "RealtimeDO.RTRiassunto", $blocks_rt );
     $agent = getAgentLoggedIn( "RealtimeDO.RTAgentsLoggedIn", $blocks_rt );
-    $agentStatus = getCurrentCalls( "RealtimeDO.RTCallsBeingProc", $blocks_rt, $agent );    
+    $agentStatus = getCurrentCalls( "RealtimeDO.RTCallsBeingProc", $blocks_rt);    
+    $print = 1;
+    getQueueStatus( "RealtimeDO.RTRiassunto", $blocks_rt, $queueids, $print);    
+    printQueues($queue);
+    
+}
+    isset($queue['all selected']['ragents'])?$ragents = $queue['all selected']['ragents']:$ragents = 0;
 
     // Get the waiting calls and number of agents for these queues
-    $waitqueue = $queue['All selected']['waiting'];
-    $nagents = $queue['All selected']['nagents'];
-    $ragents = $queue['All selected']['ragents'];
 
-}
 
-// Get the waiting calls, logged in agents and available agents
-function getQueueStatus( $blockname, $blocks ) {
-     $queue = array();
+// Get the current queue stats
+
+function getQueueStatus( $blockname, $blocks, $queueids, $print ) {
+    global $queue, $queuelist, $ragents, $useSubqueues;
      $block = $blocks[$blockname];
-     for ( $r = 0; $r < sizeof( $block ) ; $r++ ) {
+     for ( $r = 1; $r < sizeof( $block ) ; $r++ ) {
        $currentQueue = $block[$r][1];
-       $queue[$currentQueue]['waiting'] =  $block[$r][7];
-       $queue[$currentQueue]['nagents'] = $block[$r][2];
-       $queue[$currentQueue]['ragents'] = $block[$r][3];
+       if ( $currentQueue == "all selected") {
+         $ragents = $block[$r][3];
+         continue;
+        }
+
+
+       if ((1 == substr_count($currentQueue,'.')) && ($useSubqueues)) {
+         list($masterqueue, $subqueue) = explode('.', $currentQueue);
+         
+         
+         $currentQueue = $masterqueue;
+         isset($queue[$currentQueue]['waiting'])?$queue[$currentQueue]['waiting'] = $queue[$currentQueue]['waiting']:$queue[$currentQueue]['waiting'] = 0;         
+         isset($queue[$currentQueue]['incalls'])?$queue[$currentQueue]['incalls'] = $queue[$currentQueue]['incalls']:$queue[$currentQueue]['incalls'] = 0;         
+         isset($queue[$currentQueue]['outcalls'])?$queue[$currentQueue]['outcalls'] = $queue[$currentQueue]['outcalls']:$queue[$currentQueue]['outcalls'] = 0;                  
+         $queue[$currentQueue]['name'] =  $masterqueue;
+         $queue[$currentQueue]['waiting'] =  $block[$r][7] + $queue[$currentQueue]['waiting'];
+         $queue[$currentQueue]['nagents'] = $block[$r][2];
+         $queue[$currentQueue]['ragents'] = $block[$r][3];
+         $queue[$currentQueue]['incalls'] = $block[$r][8] + $queue[$currentQueue]['incalls'];         
+         $queue[$currentQueue]['outcalls'] = $block[$r][9] + $queue[$currentQueue]['outcalls'];
+         
+         
+       } else {
+         $queue[$currentQueue]['waiting'] =  $block[$r][7];
+         $queue[$currentQueue]['name'] =  $block[$r][1];
+         $queue[$currentQueue]['nagents'] = $block[$r][2];
+         $queue[$currentQueue]['ragents'] = $block[$r][3];
+         $queue[$currentQueue]['incalls'] = $block[$r][8];       
+         $queue[$currentQueue]['outcalls'] = $block[$r][9];       
+//         if (!$useSubqueues) $queue[$currentQueue]['name'] = str_replace("."," ",$queue[$currentQueue]['name']);
+       }
+//      $waitqueue = $queue[$currentQueue]['waiting'];
+//      $nagents = $queue[$currentQueue]['nagents'];
+//      $currcalls = $queue[$currentQueue]['incalls'] + $queue[$currentQueue]['outcalls'];
+      if (!isset($queue[$currentQueue]['maxholdtime'])) $queue[$currentQueue]['maxholdtime'] = '0:00';
+      if($queue[$currentQueue]['maxholdtime'] == '') $queue[$currentQueue]['maxholdtime'] = '0:00';
+      
+      if (preg_match('/utbound/', $currentQueue)) {
+        $ragents = $queue[$currentQueue]['ragents'];
+        $queue[$currentQueue]['waiting'] = '0';
+        $queue[$currentQueue]['maxholdtime'] = '0:00';
       }
-    return $queue;
+    }
+
+
+function orderBy(&$data, $field) { 
+  $code = "return strnatcmp(\$a['$field'], \$b['$field']);"; 
+  usort($data, create_function('$a,$b', $code)); 
+} 
+
+
+function printQueues($queues) {
+  orderBy($queues,'name');
+  global $ragents, $showcurrcalls, $showstatus, $showoutbound;
+  $tdwidth = round(100/sizeof($queues),1) . "%";
+  foreach ( $queues as $queue  ) {
+    // width for the tables
+    $currentQueue = $queue['name'];
+    if (1 == substr_count($currentQueue,'Master')) continue;
+    if (( $showoutbound == 0) && (1 == substr_count($currentQueue,'utbound'))) continue;
+    $queueholdtime = $queue['maxholdtime'];
+    $waitqueue = $queue['waiting'];
+    $nagents = $queue['nagents'];
+    $currcalls = $queue['incalls'] + $queue['outcalls'];
+    $ragents = $queue['ragents'];
+      
+    // Set up colour and formatting  depending on the status of the queue
+    if( $waitqueue == 0 ) {
+      $waitbgcolor = "green";
+      $snd = null;
+      $waitfontcolor = "white";
+    } elseif ($waitqueue == 1){
+      $waitbgcolor = "yellow";
+      $snd = '<EMBED SRC="/sounds/dingdong.wav" HIDDEN="true" AUTOSTART="true">';
+      $waitfontcolor = "black";
+    } elseif ($waitqueue > 1) {
+      $waitbgcolor = "red";
+      $snd = '<EMBED SRC="/sounds/ringer.wav" HIDDEN="true" AUTOSTART="true">';
+      $waitfontcolor = "white";
+      $waitqueue = "<blink>" . $waitqueue . "</blink>";
+    }
+
+    if( $ragents > 2 ) {
+      $ragentsbgcolor = "green";
+      $ragentsfontcolor = "white";
+    } elseif ($ragents == 2){
+      $ragentsbgcolor = "yellow";
+      $ragentsfontcolor = "black";
+    } elseif ($ragents <= 1) {
+      $ragentsbgcolor = "red";
+      $ragentsfontcolor = "white";
+    }
+
+    $currentQueue = str_replace("."," ",$currentQueue);
+    print <<<END
+    <td width="$tdwidth" valign="top"> 
+  <div style="border: 2px solid #FFF; width: 100%">
+        <div width="100%" align="center" valign="center" style="color:white; font-size: 15px; background-color: black; height: 70px;">$currentQueue</div>
+        <div style="background-color: grey; height:3px">&nbsp;</div>
+        <div align="center" style="color:$waitfontcolor; font-size: 25px; background-color: $waitbgcolor; ">Calls Waiting</div>
+        <div align="center" style="color:$waitfontcolor; font-size: 70px; background-color: $waitbgcolor; ">$waitqueue</div>
+        <div align="center" style="color:$waitfontcolor; font-size: 25px; background-color: $waitbgcolor; ">Max $queueholdtime</div>        
+        <div style="background-color: grey; height:3px">&nbsp;</div>
+END;
+if ($showcurrcalls == 1) {
+  print <<<END
+        <div align="center" style="color:white; font-size: 25px; background-color: green">Curr Calls:</div>
+        <div align="center" style="color:white; font-size: 70px;  background-color: green">$currcalls</div>
+END;
+}
+print <<<END
+        <div style="background-color: grey; height:3px">&nbsp;</div>
+        <div align="center" style="color:$ragentsfontcolor; font-size: 20px; background-color: $ragentsbgcolor">Rdy Agnt: <br>$ragents/$nagents</div>
+<!--        <div align="center" style="color:$ragentsfontcolor; font-size: 70px; background-color: $ragentsbgcolor">$ragents </div> -->
+
+     </div>
+    </td>
+END;
+    }
+  }
 }
 
-// Get the actual status iof each agent
+// Get the actual status of each agent
 function getAgentLoggedIn( $blockname, $blocks ) {
+//    global $agent;
     $agent = array();
     $block = $blocks[$blockname];
      for ( $r = 1; $r < sizeof( $block ) ; $r++ ) {
@@ -126,14 +275,23 @@ function getAgentLoggedIn( $blockname, $blocks ) {
 }
 
 // Get the current call details for each agent
-function getCurrentCalls( $blockname, $blocks, $agent ) {
-    global $agent;
+function getCurrentCalls( $blockname, $blocks) {
+    global $agent, $queue, $useSubqueues;
     $block = $blocks[$blockname];
      for ( $r = 1; $r < sizeof( $block ) ; $r++ ) {
-       $agent[$block[$r][6]]['caller'] = $block[$r][2];
-       $agent[$block[$r][6]]['entered'] = $block[$r][3];
-       $agent[$block[$r][6]]['waiting'] = $block[$r][4];
-       $agent[$block[$r][6]]['duration'] = $block[$r][5];
+       $agentname = $block[$r][6];
+       $agent[$agentname]['queue'] = $block[$r][1];
+       $agent[$agentname]['caller'] = $block[$r][2];
+       $agent[$agentname]['entered'] = $block[$r][3];
+       $agent[$agentname]['waiting'] = $block[$r][4];
+       $agent[$agentname]['duration'] = $block[$r][5];
+        if ($agent[$agentname]['duration'] == '-') {
+          if (1 == substr_count($agent[$agentname]['queue'],'.') && ($useSubqueues)) {
+            list($agent[$agentname]['queue'], $subqueue) = explode('.', $agent[$agentname]['queue']);
+          }
+
+            if (toSec($agent[$agentname]['waiting']) > toSec($queue[$agent[$agentname]['queue']]['maxholdtime'])) $queue[$agent[$agentname]['queue']]['maxholdtime'] = $agent[$agentname]['waiting'] ;
+        }       
       }
       $agentStatus = '';
       $rowcount=1;
@@ -146,114 +304,70 @@ function getCurrentCalls( $blockname, $blocks, $agent ) {
           $rowcolor = "gray";
           $rowcount = 1;
         }
+
+        // get the last call time for the agent, and convery to epoc time
+        if ((isset($agent[$r]['lastcall'])) && (strstr($agent[$r]['lastcall'],':'))) {
+          list($h, $m, $s) = explode(':', $agent[$r]['lastcall']);
+          $lastcalltime = mktime($h,$m,$s);
+        }
+        
         if ($agent[$r]['duration'] != '') {
           $status = "On Call since " . $agent[$r]['entered'] . " (" . $agent[$r]['duration'] . " mins)";
           $bgcolor3 = $rowcolor;
           $fontcolor3 = "red";
+        } elseif (!preg_match('/-/',$agent[$r]['onpause'])){
+          $status = "On Pause since " . $agent[$r]['onpause'];
+          $bgcolor3 = $rowcolor; 
+          $fontcolor3 = "blue";
+        } elseif (time() - $lastcalltime  < 5) {
+          $status = "Wrapping up";
+          $bgcolor3 = $rowcolor; 
+          $fontcolor3 = "yellow";
         } else {
           $status = "Available";
           $bgcolor3 = $rowcolor; 
           $fontcolor3 = "black";
         }
-        $agentStatus .="<tr bgcolor=\"" . $rowcolor . "\" style=\"color:black; font-size: 20px;\"><td>&nbsp;</td><td>" . $agent[$r]['name'] . "</td><td style=\"color:" . $fontcolor3 . ";\" bgcolor=\"" . $bgcolor3 . "\" >" . $status .  "</td><td>" . $agent[$r]['lastcall'] .  "</td><td>" . $agent[$r]['caller'] . "</td></tr>";
+        if (isset($agent[$r]['name'])) {
+          if(!isset($agent[$r]['queue'])) $agent[$r]['queue'] = '';
+          $agentStatus .="<tr bgcolor=\"" . $rowcolor . "\" style=\"color:black; font-size: 20px;\"><td>&nbsp;</td><td>" . $agent[$r]['name'] . "</td><td style=\"color:" . $fontcolor3 . ";\" bgcolor=\"" . $bgcolor3 . "\" >" . $status .  "</td><td>" . $agent[$r]['lastcall'] .  "</td><td>" . $agent[$r]['queue'] . "</td></tr>";
+        }
       }
     return $agentStatus;
 }
 
-// Set up colour and formatting  depending on the status of the queue
-if( $waitqueue == 0 ) {
-    $bgcolor = "green";
-    $snd = null;
-    $fontcolor = "white";
-  } elseif ($waitqueue == 1){
-    $bgcolor = "yellow";
-    $snd = '<EMBED SRC="/sounds/dingdong.wav" HIDDEN="true" AUTOSTART="true">';
-    $fontcolor = "black";
-  } elseif ($waitqueue > 1) {
-    $bgcolor = "red";
-    $snd = '<EMBED SRC="/sounds/ringer.wav" HIDDEN="true" AUTOSTART="true">';
-    $fontcolor = "white";
-    $waitqueue = "<blink>" . $waitqueue . "</blink>";
-  }
-  
-// Set up colour and formatting  depending on the status of the agents for these queues
-if( $ragents == 0 ) {
-    $bgcolor2 = "red";
-    $snd2 = '<img src="/sounds/snd4.wav">';
-    $fontcolor2 = "white";
-    $ragents = "<blink>" . $ragents . "</blink>";
-  } elseif ($ragents <= 2){
-    $bgcolor2 = "yellow";
-    $snd2 = '<img src="/sounds/snd3.wav">';
-    $fontcolor2 = "black";
-  } elseif ($ragents > 2) {
-    $bgcolor2 = "green";
-    $snd2 = null;
-    $fontcolor2 = "white";
-  }
+function toSec ($hms) {
+      list($h, $m, $s) = explode (":", $hms);
+      $seconds = 0;
+      $seconds += (intval($h) * 3600);
+      $seconds += (intval($m) * 60);
+      $seconds += (intval($s));
+      return $seconds;
+}
+
 
 ?>
-<html><head><meta http-equiv="refresh" content="<?php echo $refresh ?>"></head><body marginheight=0 marginwidth=0>
-<table width="100%" height="100%" cellpadding=0 cellspacing=0>
-  <tr align="center">
-      <td colspan="2" height="50" bgcolor="gray"> <font color="white" size="+3"> <?php echo $queuename ?> Queue</font></td>
-  </tr>
-  <tr>
-  <td width="50%">
-  <table width="100%" height="100%" cellpadding=0 cellspacing=0 style="border: 2px solid #000">
-    <tr align="center">
-    <td  halign="center" valign="center" height="25%" bgcolor="<?php echo $bgcolor ?>" style="color:<?php echo $fontcolor ?>; font-size: 70px;">
-      Calls Waiting:
-    </td>
-    </tr>
-    <tr>
-      <td halign="center" valign="center" align="center" width="100%" bgcolor="<?php echo $bgcolor ?>" style="color:<?php echo $fontcolor ?>; font-size: 150px;"> 
-        <?php echo $waitqueue ?>
-      </td>
-    </tr>  
-</table>
-</td>
 
-<td width="50%">
-<table width="100%" height="100%" cellpadding=0 cellspacing=0 style="border: 2px solid #000">
-  <tr align="center" colspan="2">
-    <td colspan="2" halign="center" valign="center" height="25%"  bgcolor="<?php echo $bgcolor2 ?>" style="color:<?php echo $fontcolor2 ?>; font-size: 70px;">
-      Agent Status:
-    </td>
-  </tr>
-  <tr bgcolor="<?php echo $bgcolor2 ?>">
-      <td valign="center" align="center" style="color:<?php echo $fontcolor2 ?>; font-size: 40px;">
-         Agents Logged in:
-      </td>
-      <td align="left" style="color:<?php echo $fontcolor2 ?>; font-size: 50px;" width=25%>
-          <?php echo $nagents ?>
-      </td>
-  </tr>
-  <tr bgcolor="<?php echo $bgcolor2 ?>">
-      <td valign="center" align="center" style="color:<?php echo $fontcolor2 ?>; font-size: 40px;">
-          Agents Available:
-      </td>
-      <td align="left" style="color:<?php echo $fontcolor2 ?>; font-size: 50px;" width=25%>
-        <?php echo $ragents ?>
-        <?php echo $snd ?>
-      </td>
-      
-  </tr>
-</table>
-</td>
-</tr>
+</tr><tr><td>&nbsp;</td></tr><tr>
+<?php
+if ($showstatus == 1) {
+print <<<END
 <!-- Agent Status Table -->
-<td colspan=2 bgcolor="gray">
+<td colspan=20 bgcolor="gray" valign="top">
 <table  width="100%" height="100%" cellpadding=0 cellspacing=0 style="border: 2px solid #000">
   <tr style="color:white; font-size: 25px;">
-    <td>&nbsp;</td><td>Agent</td><td>Status</td><td>Last Call</td><td>Current Caller</td>
+    <td>&nbsp;</td><td>Agent</td><td>Status</td><td>Last Call</td><td>Current Queue</td>
   </tr>
-  <?php echo $agentStatus ?>
+  $agentStatus
 </table>
 
 </td>
+END;
+}
+?>
 </table>
 </body>
-
-
 </html>
+
+
+ 
