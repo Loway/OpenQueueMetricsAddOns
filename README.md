@@ -1,3 +1,4 @@
+
 OpenQueueMetricsAddOns
 ======================
 
@@ -15,9 +16,17 @@ A PHP script that counts how many unique agents are running on a given set of qu
 ### Sample project - Version 1.0 
 This is a sample project to show standard file layout for sub-projects.
 
+
 See also
 --------
 
 * [Open QueueMetrics Add-Ons forum](http://forum.queuemetrics.com/index.php?board=14.0)
 * [QueueMetrics home page](http://queuemetrics.com)
+
+Other projects you may be interested in
+---------------------------------------
+
+* [QM Wallboard](https://github.com/WalterMondale/QM-Wallboard) written in Ruby
+* A [Node.js QM interface](https://github.com/holidayextras/node-queuemetrics)
+* The [QueueMetrics XML-RPC Query Browser](https://github.com/Loway/QueueMetricsXmlRpcBrowser) lets you interact with the XML-RPC interface of QM from a web page
 
