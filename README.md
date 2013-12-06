@@ -13,6 +13,8 @@ patching to work with recent versions of QM.
 A script to be run nightly that will notify the sysadmin of the errors encountered in the Qloader's log file.
 ### Count Agents - Version 1.0 
 A PHP script that counts how many unique agents are running on a given set of queues and period
+### Remove all agents - Version 1.0
+A bash script that removes all dynamic agents from a queue.
 ### Sample project - Version 1.0 
 This is a sample project to show standard file layout for sub-projects.
 
@@ -26,7 +28,7 @@ See also
 Other projects you may be interested in
 ---------------------------------------
 
-* [QM Wallboard](https://github.com/WalterMondale/QM-Wallboard) written in Ruby
+* [QM Wallboard](https://github.com/ishiel/QM-Wallboard) written in Ruby
 * A [Node.js QM interface](https://github.com/holidayextras/node-queuemetrics)
 * The [QueueMetrics XML-RPC Query Browser](https://github.com/Loway/QueueMetricsXmlRpcBrowser) lets you interact with the XML-RPC interface of QM from a web page
 
