@@ -16,7 +16,7 @@ public class xmltest extends HttpServlet {
 
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 
-        String stUrl = "http://localhost:8080/jupix/xmlrpc.do";
+        String stUrl = "http://localhost:8080/queuemetrics/xmlrpc.do";
         System.setProperty("org.xml.sax.driver","org.apache.xerces.parsers.SAXParser");
 
         try {
