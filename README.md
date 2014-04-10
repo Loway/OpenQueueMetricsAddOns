@@ -21,7 +21,8 @@ This is a sample project to show standard file layout for sub-projects.
 Integration between QueueMetrics live agent page and SugarCRM for opening the CRM contact page starting from a caller id information
 ### VTiger CRM Integration - Version 1.0
 Integration between QueueMetrics live agent page and VTigerCRM for opening the CRM contact page starting from a caller id information
-
+### XML-RPC Test Servlet - Version 1.0
+A basic Java Servlet to query Queuemetrics XML-RPC.  A useful tool during development.
 
 
 See also
