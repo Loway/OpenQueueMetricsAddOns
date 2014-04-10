@@ -39,6 +39,14 @@ Just put the xmlrpc-tester folder into your webapps folder
 
 Compile the servlet, the included compile script should do this for you.
 
+You will need the following Java libraries to build against:
+
+- Servlet API.  You'll already have this on your server running Queuemetrics.
+- Redstone XML-RPC library: [xmlrpc.sourceforge.net](http://xmlrpc.sourceforge.net)
+- Apache Xerces XML parser library: [xerces.apache.org](http://xerces.apache.org)
+
+Once you have the jar files put them into the xmlrpc-tester/WEB-INF/lib/ folder.
+
 ```
 cd <tomcat path>/webapps/xmlrpc-tester/WEB-INF/classes
 ./compile.sh
