@@ -1,0 +1,70 @@
+apply plugin: 'java'
+apply plugin: 'jetty'
+
+def env = System.getenv()
+
+//
+//
+
+project.ext {
+  webapp_name    = 'xmlrpc-tester'
+  app_version    = '0.1'
+
+  build_number   = env["BUILD_NUMBER"]  
+  build_time     = "" + new Date()
+}
+
+
+
+// ------------------------------S
+
+//sourceCompatibility: 1.5
+//version: 1.0
+
+sourceSets {
+		
+	main {
+		java {
+			srcDirs "./classes"
+		}
+	}
+
+	test {
+		java {
+			srcDirs "./tests"
+		}
+	}
+}
+
+jar {
+    manifest {
+        attributes("Implementation-Title": project.ext.webapp_name, "Implementation-Version": project.ext.app_version)
+    }
+    archiveName project.ext.webapp_name + "-" + project.ext.app_version + ".jar"
+}
+
+
+repositories {
+	mavenCentral()	
+}
+
+
+dependencies {
+	compile 'org.apache.tomcat:servlet-api:6.0.37'
+    compile 'org.kohsuke.redstone:redstone:1.1.1'
+	compile 'xerces:xerces:2.4.0'
+	
+	testCompile 'junit:junit:4.10'
+}
+
+
+
+jettyRun {
+    httpPort = 8087
+    reload = "automatic"
+    scanIntervalSeconds = 1
+    webAppSourceDirectory = new File( "./web" )
+    webXml = new File( "./web/WEB-INF/web.xml" )
+    //classpath = fileTree( dir: "$buildDir/classes/main" )
+}
+
