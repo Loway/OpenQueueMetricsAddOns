@@ -30,36 +30,30 @@ There's a basic web.xml config file in there which will get it working.  I've us
 
 Requirements
 ------------
-Java Servlet engine (such as the one you're already using for Queuemetrics)
+Gradle build tool
+
 
 Installing
 ----------
 
-Just put the xmlrpc-tester folder into your webapps folder
 
-Compile the servlet, the included compile script should do this for you.
+Edit the paths under classes/xmltest.java
 
-You will need the following Java libraries to build against:
+go to the main dir and enter
 
-- Servlet API.  You'll already have this on your server running Queuemetrics.
-- Redstone XML-RPC library: [xmlrpc.sourceforge.net](http://xmlrpc.sourceforge.net)
-- Apache Xerces XML parser library: [xerces.apache.org](http://xerces.apache.org)
+   gradle clean build
 
-Once you have the jar files put them into the xmlrpc-tester/WEB-INF/lib/ folder.
 
-```
-cd <tomcat path>/webapps/xmlrpc-tester/WEB-INF/classes
-./compile.sh
-```
-
-Then restart Tomcat or whichever servlet container you're using.
 
 Usage istructions
 -----------------
 
-Web browse to:
+Run
 
-<url to tomcat base>/xmlrpc-tester/xmltest
+   gradle jettyRun
+
+And browse to the printed URL. :)
+
 
 Authors
 -------
