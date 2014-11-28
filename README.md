@@ -17,8 +17,9 @@ A PHP script that counts how many unique agents are running on a given set of qu
 A bash script that removes all dynamic agents from a queue.
 ### Sample project - Version 1.0 
 This is a sample project to show standard file layout for sub-projects.
-### Sugar CRM Integration - Version 1.0
-Integration between QueueMetrics live agent page and SugarCRM for opening the CRM contact page starting from a caller id information
+### Sugar CRM Integration - Version 1.1
+Integration between QueueMetrics live agent page and SugarCRM for opening the CRM contact page starting from a caller id information.
+Now including a REST script for SugarCRM 6.5+
 ### VTiger CRM Integration - Version 1.0
 Integration between QueueMetrics live agent page and VTigerCRM for opening the CRM contact page starting from a caller id information
 ### XML-RPC Test Servlet - Version 1.0

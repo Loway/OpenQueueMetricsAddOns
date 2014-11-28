@@ -2,7 +2,7 @@ QueueMetrics and SugarCRM Integration add-on project
 ====================================================
 
 ```
-Project version: 1.0 
+Project version: 1.1
 Runtime environment: LAMP with nusoap libraries installed
 Licence: "LGPL"
 ```
@@ -16,6 +16,13 @@ When properly configured, the QueueMetrics agent call history page opens an exte
 This feature could be used to call the provided PHP script. The script searches between contacts in the SugarCRM, starting
 from the calling number, and opens the call detail record, if present on SugarCRM database, or preloads a new contact page with
 the calling party number.
+
+An alternative script is available under the Rest folder and is meant to be used with
+the REST interface in SugarCRM 6.5+.
+
+- The two files found are to be copied to a webroot.
+- Modify variables in "qm.php" as described within the file itself.
+- "qm.php" is the entry point to include in QM settings; http://your.server/qm.php?callerid=[C]
 
 
 Requirements
@@ -41,7 +48,7 @@ The logic needed to retrieve the SugarCRM agent password should be called by the
 
 Authors
 -------
-Marco Signorini
+Marco Signorini, WISE Team
 
 
 See also
