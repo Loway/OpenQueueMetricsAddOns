@@ -19,6 +19,8 @@ This is a sample project to show standard file layout for sub-projects.
 Integration between QueueMetrics live agent page and SugarCRM for opening the CRM contact page starting from a caller id information
 ### VTiger CRM Integration - Version 1.0
 Integration between QueueMetrics live agent page and VTigerCRM for opening the CRM contact page starting from a caller id information
+### JSON PBX actions - Version 1.0
+A simple PHP JSON example library can be used to interact with QueueMetrics to perform PBX actions like login/logout, pause and unpause agents etc.
 
 
 See also
