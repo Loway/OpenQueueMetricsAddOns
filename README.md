@@ -24,6 +24,8 @@ Now including a REST script for SugarCRM 6.5+
 Integration between QueueMetrics live agent page and VTigerCRM for opening the CRM contact page starting from a caller id information
 ### XML-RPC Test Servlet - Version 1.0
 A basic Java Servlet to query Queuemetrics XML-RPC.  A useful tool during development.
+### JSON PBX actions - Version 1.0
+A simple PHP JSON example library can be used to interact with QueueMetrics to perform PBX actions like login/logout, pause and unpause agents etc.
 
 
 See also
