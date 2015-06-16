@@ -31,25 +31,24 @@ require_once 'XML/RPC.php';
 $ROBOT_USER="robot";
 $PASSWORD="robot";
 
-$qm_server = "10.10.5.37"; // the QueueMetrics server address
-$qm_port   = "8080";        // the port QueueMetrics is running on
+$qm_server = "10.10.5.37";   // the QueueMetrics server address
+$qm_port   = "8080";         // the port QueueMetrics is running on
 $qm_webapp = "queuemetrics"; // the webapp name for QueueMetrics
 
-
 isset($_GET['refresh'])?$refresh = $_GET['refresh']:$refresh=5; // how often to refresh the page
-isset($_GET['queue'])?$queuegroup = $_GET['queue']:$queuegroup='inbound'; // Which queue group to display (see switch statement below)
+isset($_GET['queue'])?$queuegroup = $_GET['queue']:$queuegroup='all'; // Which queue group to display (see switch statement below)
 isset($_GET['showstatus'])?$showstatus = $_GET['showstatus']:$showstatus=1; // Whether to show the Agent Status for a queue group
 isset($_GET['showcurrcalls'])?$showcurrcalls = $_GET['showcurrcalls']:$showcurrcalls=1; // Whether to show the Current Calls for a queue group
 isset($_GET['showout'])?$showoutbound = $_GET['showout']:$showoutbound=1; //Whether to show the Outbound queue as a separate column for a queue group
 $useSubqueues = true;
 switch ($queuegroup) {
   case 'all':
-    $queueids = "q300|q301";
+    $queueids = "300|301";
     $queuename='Inbound';
   break;;
 
   case 'outbound':
-    $queueids = "q300|q301";
+    $queueids = "300|301";
     $outboundqueue = 'Outbound';
     $queuename='Outbound';
     $showstatus=1;
@@ -58,7 +57,7 @@ switch ($queuegroup) {
   break;;
 
 case 'inbound':
-    $queueids = "q300|q301";
+    $queueids = "300|301";
     $showoutbound = 0;
     $outboundqueue = 'TechSupp-Outbound';
     $queuename='Technical Support';
@@ -75,8 +74,8 @@ $req_blocks_rt = new XML_RPC_Value(array(
       new  XML_RPC_Value("RealtimeDO.RTAgentsLoggedIn"),
       new XML_RPC_Value("RealtimeDO.RTRiassunto")
            ), "array");
-// First we need to get the number of ready agents for the common queues. This is a bug in QM as it will report
-// an agent as free in one queue even if they are on a call in another.
+
+// First we need to get the number of ready agents for the common queues. 
 $params_rt = array(
      new XML_RPC_Value($queueids),
            new XML_RPC_Value($ROBOT_USER),
@@ -87,7 +86,8 @@ $params_rt = array(
        );
 $msg_rt = new XML_RPC_Message('QM.realtime', $params_rt);
 $cli_rt = new XML_RPC_Client("/$qm_webapp/xmlrpc.do", $qm_server,$qm_port);
-//$cli_rt->setDebug(1);
+// $cli_rt->setDebug(1);  // UNCOMMENT THIS TO SEE RAW DATA
+
 $resp_rt = $cli_rt->send($msg_rt);
 if (!$resp_rt) {
     echo 'Communication error: ' . $cli_rt->errstr;
@@ -255,13 +255,15 @@ function getAgentLoggedIn( $blockname, $blocks ) {
 function getCurrentCalls( $blockname, $blocks) {
     global $agent, $queue, $useSubqueues;
     $block = $blocks[$blockname];
+    // var_dump( $block );
+
      for ( $r = 1; $r < sizeof( $block ) ; $r++ ) {
-       $agentname = $block[$r][6];
+       $agentname = $block[$r][7];
        $agent[$agentname]['queue'] = $block[$r][1];
        $agent[$agentname]['caller'] = $block[$r][2];
        $agent[$agentname]['entered'] = $block[$r][3];
-       $agent[$agentname]['waiting'] = $block[$r][4];
-       $agent[$agentname]['duration'] = $block[$r][5];
+       $agent[$agentname]['waiting'] = $block[$r][5];
+       $agent[$agentname]['duration'] = $block[$r][6];
         if ($agent[$agentname]['duration'] == '-') {
           if (1 == substr_count($agent[$agentname]['queue'],'.') && ($useSubqueues)) {
             list($agent[$agentname]['queue'], $subqueue) = explode('.', $agent[$agentname]['queue']);
@@ -269,6 +271,9 @@ function getCurrentCalls( $blockname, $blocks) {
             if (toSec($agent[$agentname]['waiting']) > toSec($queue[$agent[$agentname]['queue']]['maxholdtime'])) $queue[$agent[$agentname]['queue']]['maxholdtime'] = $agent[$agentname]['waiting'] ;
         }
       }
+
+      // var_dump( $agent);
+
       $agentStatus = '';
       $rowcount=1;
       for  ( $r = 0; $r < sizeof( $agent ) ; $r++ ) {
@@ -282,7 +287,7 @@ function getCurrentCalls( $blockname, $blocks) {
         }
 	//$lastcalltime = 0;
 
-        // get the last call time for the agent, and convert to epoc time
+        // get the last call time for the agent, and convert to epoch time
         if ((isset($agent[$r]['lastcall'])) && (strstr($agent[$r]['lastcall'],':'))) {
           list($h, $m, $s) = explode(':', $agent[$r]['lastcall']);
           $lastcalltime = mktime($h,$m,$s);
@@ -291,7 +296,7 @@ function getCurrentCalls( $blockname, $blocks) {
         if ($agent[$r]['duration'] != '') {
           $status = "On Call since " . $agent[$r]['entered'] . " (" . $agent[$r]['duration'] . " mins)";
 
-  $bgcolor3 = $rowcolor;
+          $bgcolor3 = $rowcolor;
           $fontcolor3 = "red";
         } elseif (!preg_match('/-/',$agent[$r]['onpause'])){
           $status = "On Pause since " . $agent[$r]['onpause'];

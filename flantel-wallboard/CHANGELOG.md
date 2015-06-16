@@ -3,6 +3,10 @@ Changelog for project Flantel Wallboard
 
 Return to [README](README.md).
 
+Version 1.1 - 2015.06.16
+
+* Works with QueueMetrics 15.02
+
 
 Version 1.0 - 2013.05.02
 
