@@ -11,7 +11,8 @@ See  [changelog](CHANGELOG.md).
 Project description
 -------------------
 
-This sicript is a trivial example of an Asterisk single-question IVR that logs the reponse as a QA form on QueueMetrics.
+This script is a trivial example of an Asterisk single-question IVR that logs the reponse as a QA form on QueueMetrics.
+
 
 
 Requirements
@@ -24,15 +25,12 @@ The script requires to have installed:
 Installing
 ----------
 
-...
+Just copy to the agi-bin/ folder and make it executable.
 
 Usage istructions
 -----------------
 
-```
-xxx
-```
-
+See the QueueMetrics Advanced User Manual.
 
 
 Authors
