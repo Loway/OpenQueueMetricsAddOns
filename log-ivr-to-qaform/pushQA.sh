@@ -15,8 +15,8 @@
 #
 
 QM=http://127.0.0.1:8080/queuemetrics
-USER=robot:robot
-FORM=SATID
+USER=qasubmit:passw0rd
+FORM=SATISF
 ITEM=SAT
 
 UNIQUEID=$1
