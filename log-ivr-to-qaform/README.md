@@ -13,7 +13,7 @@ Project description
 
 This script is a trivial example of an Asterisk single-question IVR that logs the reponse as a QA form on QueueMetrics.
 
-
+Full description at http://manuals.loway.ch/QM_AdvancedConfig-chunked/
 
 Requirements
 ------------
