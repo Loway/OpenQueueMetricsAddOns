@@ -1,26 +1,24 @@
 #! /bin/bash
-#
-# This script removes all agents from a given Asterisk
-# queue.
-#
-#
-
-if [[ $# -eq 0 ]] ; then
-    echo "Usage: $0 queuename"
-    exit 1
-fi
-
-qName=$1
-
-echo "Removing any dynamic agent from queue $qName"
-
-asterisk -rx "queue show $qName" | awk -v q=$qName '
-	/dynamic/  {
-		agent = $1;
-		cmd =  "queue remove member " agent " from " q
-		printf " - " agent ": " ;
-		system( "asterisk -rx \"" cmd "\"" );
-}'
 
 
+echo Sloggatron Is Running . . . 
 
+## find all agents 
+declare -a members=(`asterisk -rx "queue show" | grep "/" | cut -d"(" -f1`)
+
+##find all queues
+declare -a queues=(`asterisk -rx "queue show" | cut -d " " -f1`  )
+
+## now loop through the above arrays
+for i in "${members[@]}"
+do
+   for q in "${queues[@]}"
+   do        
+	##attempts to remove each agent from each queue
+	cmd="queue remove member $i from $q"
+        asterisk -rx "$cmd"
+        echo Action Performed: $cmd
+   done
+done
+
+echo . . . done
