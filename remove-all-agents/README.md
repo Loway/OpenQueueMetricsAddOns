@@ -28,7 +28,7 @@ Copy the file to your Linux box, and make it executable.
 In order to run on Linux machines, the executable flag must be set. To do this, from a shell prompt issue the command reported below: 
 
 
-Usage istructions
+Usage instructions
 -----------------
 
 The script requires the name of the queue to log everybody off from.
