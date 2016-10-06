@@ -25,4 +25,4 @@ Put your script somewhere in your machine (__/opt/scripts__ is a good place) and
 
 Then make sure to add a line to your crontab in order to execute it every 5 minutes until you collected enough information.
 
-  */5 * * * * /path/to/observe_qm_mem.sh
+    */5 * * * * /path/to/observe_qm_mem.sh
