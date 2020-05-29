@@ -1,0 +1,35 @@
+
+[
+
+{% for c in clients %}
+	{
+		"clientname": "{{ c }}",
+		"uri": "{{ clients[c].url }}",
+		"login": "{{ clients[c].login }}",
+		"pass": "{{ clients[c].pass }}",
+		"token": "{{ pbxid }}",
+		"matcher": ["-{{ c }}"],
+		"match": "suffix",
+		"removematch": true,
+		"disabled": false,
+		"noactions": true
+	},
+
+{% endfor %}
+
+	{
+		"clientname": "DUMMY CLOSING ENTRY",
+		"uri": "file:q-client00.txt",
+		"login": "",
+		"pass": "",
+		"token": "",
+		"matcher": [""],
+		"match": "any",
+		"removematch": true,
+		"disabled": true,
+		"noactions": true
+	}
+
+]
+
+

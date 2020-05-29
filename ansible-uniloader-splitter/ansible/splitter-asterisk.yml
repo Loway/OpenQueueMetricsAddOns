@@ -1,0 +1,64 @@
+---
+- hosts: asterisk
+  become: yes
+  #become_user: root
+  #become_method: sudo
+  vars:
+    uniloader_version: "0.7.1"
+    clients:
+      client1:
+        url:   "https://my.queuemetrics-live.com/client1/"
+        login: "webqloader"
+        pass:  "upload"  
+      client2:
+        url:   "http://my.local:8080/queuemetrics/"
+        login: "webqloader"
+        pass:  "upload"
+
+  tasks:
+    - name: Create Uniloader folder  
+      file:
+        path: /opt/uniloader-splitter/uniloader
+        state: directory
+
+    - name: Download and unarchive
+      unarchive:
+        src: http://downloads.loway.ch/qm/uniloader-{{ uniloader_version }}.tar.gz
+        dest: /opt/uniloader-splitter/uniloader
+        remote_src: yes
+        validate_certs: no
+
+    - name: Create a symbolic link so that it is available everywhere
+      file:
+        src: /opt/uniloader-splitter/uniloader/uniloader-{{ uniloader_version }}/bin/uniloader_amd64
+        dest: /usr/local/bin/uniloader
+        state: link     
+
+    - name: install splitter init.d file
+      template: 
+        src: ./files/uniloader-splitter.initd.j2
+        dest: /etc/init.d/uniloader-splitter
+        mode: 0766
+      notify: splitter-restart
+
+    - name: start splittter on boot
+      service:
+        name: uniloader-splitter
+        enabled: true
+
+    - name: build splitter brain file
+      template: 
+        src: ./files/splitter.json.j2
+        dest: /opt/uniloader-splitter/splitter.json
+        mode: 0766
+      notify: splitter-restart
+
+
+      
+  handlers:
+    - name: splitter-restart
+      service:
+        name: uniloader-splitter
+        state: restarted
+
+
