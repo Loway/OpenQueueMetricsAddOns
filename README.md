@@ -6,6 +6,8 @@ A set of community-contributed scripts for QueueMetrics. This project was origin
 
 The following projects are hosted:
 
+### Ansible splitter
+Controls a set of Uniloader splitters via Ansible
 ### The Flantel qmon.php wallboard - Version 1.1
 This is the original script, and a QM users' all-time favourite.
 Now patched to support QueueMetrics 15.02.
