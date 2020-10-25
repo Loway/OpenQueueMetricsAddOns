@@ -30,6 +30,8 @@ A basic Java Servlet to query Queuemetrics XML-RPC.  A useful tool during develo
 A simple PHP JSON example library can be used to interact with QueueMetrics to perform PBX actions like login/logout, pause and unpause agents etc.
 ### Log IVR response to QM
 Shows how to log an IVR that is run at the end of a call to a QA form in QueueMetrics.
+### Examples for data block XS03
+You can download JSON data and have it appear in QM. Here are a few configuration examples you can use to get started.
 
 
 See also
