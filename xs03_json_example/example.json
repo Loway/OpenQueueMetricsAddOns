@@ -1,0 +1,12 @@
+{
+    "headers": [
+        { "title": "A Text Columns", "style": "width=150 type=text" },
+        { "title": "Column 2", "style": "width=50 type=num" },
+        { "title": "Column 3", "style": "width=50 type=text" }
+    ],
+    "data": [
+        [ "a", "0", "c" ],
+        [ "d", "1", "f" ]
+    ]
+}
+
