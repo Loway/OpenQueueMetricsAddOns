@@ -1,6 +1,8 @@
 # A QueueMetrics Wallboard cache
 
 
+![Alt text](./qm_embedded_wb?raw=true "How it looks like")
+
 ## Prerequisites
 
 On CentOS 7, `curl https://intoli.com/install-google-chrome.sh | bash`.
@@ -35,7 +37,9 @@ Where you can have up to three.
 
 **As a web panel**
 
-Most flexible, it is a panel so it can be resized / hidden / etc.
+Most flexible, it is a panel so it can be hidden / moved / etc.
+
+When resized, image resizes.
 
 	realtime.agent_webpanel1_url=http://127.0.0.1:3000/?wb=classic&agent=[a]
 	realtime.agent_webpanel1_label=My wallboard
