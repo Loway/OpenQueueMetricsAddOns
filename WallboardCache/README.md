@@ -22,23 +22,66 @@ __Disadvantages:__
 
 ## Prerequisites
 
-On CentOS 7, `curl https://intoli.com/install-google-chrome.sh | bash`.
+__Google Chrome__
 
-Node 10+
+On CentOS 7:
+
+	curl https://intoli.com/install-google-chrome.sh | bash
+
+
+This will install a Chrome that can be run from `/usr/bin/google-chrome`.
+
+__Node 10+__
+
+On CentOS 7:
 
 	yum install -y gcc-c++ make atk java-atk-wrapper at-spi2-atk gtk3 libXt
 	yum update -y nss
 	curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
-
+	yum install -y nodejs
 
 
 ## Usage
 
+First, you have to configure your wallboards in 
+
+	const WALLBOARDS = {
+	  plain:
+	    my_qm +
+	    "queues=500%7C501%7C502%7C770%7C771%7C772%7Cpark-default&wallboardId=17",
+	  classic:
+	    my_qm +
+	    "queues=500%7C501%7C502%7C770%7C771%7C772%7Cpark-default&wallboardId=16",
+	  hn: "https://news.ycombinator.com/"
+	};
+
+Each wallboard has a name and a URL (that is, the one you get from QM). You can have as many wallboards as you need.
+
+	const delay = 5000;
+
+Is the page refresh time, both for servers and for clients.
+
+	const localChrome =
+	  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+
+This is where the local instance of Chrome will be found.
+
+	const extra_args = []; // ["--disable-setuid-sandbox", "--no-sandbox"]
+
+If running as root (not recommended!) you should set `extra_args` to `["--disable-setuid-sandbox", "--no-sandbox"]`or Chrome won't start.
+
+Then run:
+
 	npm install
-	rm -rf data/
+	rm -rf workspace/
 	node index.js
 
-Once clients are connected, you can restart the process - images will stall for a few seconds, but will keep on working. If the process crashes, client images will stall, and will restart when the process is restarted.
+
+Each wallboard will be availble at the URL:
+
+	http://127.0.0.1:3000/?wb={name_of_wallboard}&agent={id_of_agent}
+
+Once clients are connected, you can restart the process at any time - images will stall for a few seconds, but will keep on working. If the process crashes, client images will stall, and will restart automatically when the process is restarted.
 
 It might be a good idea to restart the process evey few hours, as to avoid memory leaks.
 
@@ -77,11 +120,10 @@ Least flexible, can have only one:
 	realtime.agent_background_url=http://127.0.0.1:3000/?wb=classic&agent=[a]
 
 
+## For developers
 
-
-
-## Developers
-
-After changing:
+After making changes:
 
 	npx prettier --write index.js
+
+Thanks!
