@@ -1,6 +1,6 @@
 # A QueueMetrics Wallboard cache
 
-_In the end, if you have to serve hundreds of identical, non interactive wallboards that just display the current state, why not run just one of them, take pictures of it and redistribuite those instead?_
+_In the end, if you have to serve hundreds of identical, non-interactive wallboards that just display the current state, why not run just one of them, take **pictures** of it and redistribuite those pictures instead?_
 
 
 ![Alt text](https://github.com/Loway/OpenQueueMetricsAddOns/raw/master/WallboardCache/qm_embedded_wb.jpg "How it looks like")
