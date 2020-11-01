@@ -1,22 +1,23 @@
 # A QueueMetrics Wallboard cache
 
-__In the end, if you have to serve hundreds of identical, non interactive wallboards that just display the current state, why not run just one of them, take pictures of it and redistribuite those instead?__
+_In the end, if you have to serve hundreds of identical, non interactive wallboards that just display the current state, why not run just one of them, take pictures of it and redistribuite those instead?_
 
 
 ![Alt text](https://github.com/Loway/OpenQueueMetricsAddOns/raw/master/WallboardCache/qm_embedded_wb.jpg "How it looks like")
 
 
-Advantages:
+__Advantages:__
 
-- Very resilient, very safe
-- Works in really *any* client, with minimal energy consumption
+- Very resilient: keeps on working even when server fails, will re-sync when it comes back up 
+- Very safe: it's just a picture!
+- Works in really *any* client, with minimal memory and energy consumption
 
-s
-Disadvantages:
+
+__Disadvantages:__
 
 - It's slow
-- Consumes a bit of bandwidth
-- Requires separate rendering server
+- Uses more bandwidth (but: see below)
+- Requires a separate rendering server
 
 
 ## Prerequisites
@@ -41,9 +42,9 @@ Once clients are connected, you can restart the process - images will stall for 
 
 It might be a good idea to restart the process evey few hours, as to avoid memory leaks.
 
-As each wallboard requires a separate Chrome instance, I'm seeing that it costs ~100M per wallboard on the server. 
+As each wallboard requires a separate Chrome instance, I'm seeing that it costs __~100M per wallboard__ on the server. 
 
-In terms of data usage, if the average resulting image is ~60k and clients reload 720 times per hour, it's less than 50M/hour/client = ~15k/sec/client. If this is too much, you can have clients reload less often (every 10, 20 or even 60 seconds) to maintain situational awareness with a minimal data usage. In the end, how often would the look up at the wallboard in front of them? 
+In terms of __data usage__, if the average resulting image is ~60k and clients reload 720 times per hour, it's less than 50M/hour/client = ~15k/sec/client. If this is too much, you can have clients reload less often (every 10, 20 or even 60 seconds) to maintain situational awareness with a minimal data usage. In the end, how often would the look up at the wallboard in front of them? 
 
 
 ### Set up in QueueMetrics
