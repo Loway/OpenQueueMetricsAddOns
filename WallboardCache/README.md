@@ -1,7 +1,7 @@
 # A QueueMetrics Wallboard cache
 
 
-![Alt text](./qm_embedded_wb?raw=true "How it looks like")
+![Alt text](https://github.com/Loway/OpenQueueMetricsAddOns/raw/master/WallboardCache/qm_embedded_wb.jpg "How it looks like")
 
 ## Prerequisites
 
