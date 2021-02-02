@@ -36,12 +36,12 @@
         actions: True
         disabled: False    
 
+    # Misc directories
     datadir: "/opt/uniloader-splitter" 
     qlogfile: "{{ datadir }}/queuelog-synth-fsw.txt"
     eventsfile: "{{ datadir }}/fsw-events.txt"
     splitterfile: "{{ datadir }}/splitter.json"
     autoconfigdir: "{{ datadir }}/autocfg"
-
 
 
   tasks:
