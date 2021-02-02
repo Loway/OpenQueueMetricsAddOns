@@ -41,7 +41,8 @@ Requirements
 On each QM Live instance, the following settings must be made before starting:
 
 - User `robot` is enabled to allow remote configuration
-- The settings below are present
+- The settings below are present.
+
 
     platform.pbx=Freeswitch
     default.webloaderpbx=true
