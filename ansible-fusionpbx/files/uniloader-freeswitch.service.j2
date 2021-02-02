@@ -1,0 +1,29 @@
+#
+# Systemd Unit for Uniloader with FreeSwitch
+#
+
+[Unit]
+Description=Loway Uniloader for FreeSwitch
+After=syslog.target network.target
+
+
+[Service]
+Type=simple
+#EnvironmentFile=/etc/uniloader-freeswitch
+Nice=15
+KillMode=process
+PIDFile=/var/run/uniloader-freeswitch.pid
+ExecStart=/bin/uniloader fsw \
+         --host "{{ fsw_host }}" --port "{{ fsw_port }}" --auth "{{ fsw_auth }}" \
+         --queuelog "{{ qlogfile }}" \
+         --ps-uri "{{ fusion_db }}" --ps-login "{{ fusion_login }}" --ps-pwd "{{ fusion_pwd }}" \
+         --shorten-domain 1 \
+         --pid /var/run/uniloader-freeswitch.pid \
+         --events "{{ eventsfile }}"
+
+RestartSec=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

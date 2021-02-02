@@ -1,0 +1,162 @@
+---
+- hosts: fusion
+  become: yes
+  #become_user: root
+  #become_method: sudo
+  vars:
+    
+    fsw_host: "10.10.1.119"
+    fsw_port: "8021"
+    fsw_auth: "ClueCon"
+
+    fusion_db: "127.0.0.1/fusionpbx?sslmode=disable"
+    fusion_login: "fusionpbx"
+    fusion_pwd: "s0mepassw0rd"
+
+    datadir: "/opt/uniloader-splitter" 
+    qlogfile: "{{ datadir }}/queuelog-synth-fsw.txt"
+    eventsfile: "{{ datadir }}/fsw-events.txt"
+    splitterfile: "{{ datadir }}/splitter.json"
+    autoconfigdir: "{{ datadir }}/autocfg"
+
+    # Autoconfiguration
+    # You need to have user "robot" enabled in QmLive
+    # To always force autoconfiguration, we just remove the contents of autoconfigdir
+    autoconfiguration: True
+    autoconfigure_always: False
+    autoconfigure_agent_pwd: "v3rys3cret"
+    default_domain: "company.my"    
+
+    # Here are all of our clients
+    clients:
+      client1:
+        url:   "https://my.queuemetrics-live.com/client1/"
+        login: "webqloader"
+        pass:  "upload"  
+      client2:
+        url:   "http://my.local:8080/queuemetrics/"
+        login: "webqloader"
+        pass:  "upload"
+            
+
+
+  tasks:
+    - name: test connection
+      ping:
+      #remote_user: root
+
+    - name: Add loway.repo
+      get_url:
+        url: http://yum.loway.ch/loway.repo
+        dest:  /etc/yum.repos.d/loway.repo
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Install common packages
+      yum:
+        name:
+          - mc
+          - curl
+          - wget
+          - lsof
+          - uniloader
+        state: present
+
+    - name: Disable useless services
+      service:
+        name={{ item }} 
+        enabled=no 
+        state=stopped 
+      with_items:
+        - uniloader
+
+    #Create a folder for logs
+    - name: Create work folders
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ datadir }}"
+        - "{{ autoconfigdir }}"
+
+    - name: Create empty qlog folder  
+      file:
+        path: "{{ qlogfile }}"
+        state: touch
+
+
+    # freeswitch
+    - name: install uniloader-freeswitch systemd unit file
+      template: 
+        src: ./files/uniloader-freeswitch.service.j2
+        dest: /etc/systemd/system/uniloader-freeswitch.service
+      notify: fsw-restart
+
+    - name: start the service (if not started)
+      systemd: state=started daemon_reload=yes name=uniloader-freeswitch    
+
+    - name: start on boot
+      service:
+        name: uniloader-freeswitch
+        enabled: true
+
+
+    # splitter
+    - name: install uniloader-splitter systemd unit file
+      template: 
+        src: ./files/uniloader-splitter.service.j2
+        dest: /etc/systemd/system/uniloader-splitter.service
+      notify: splitter-restart
+
+    - name: start the service (if not started)
+      systemd: state=started daemon_reload=yes name=uniloader-splitter   
+
+    - name: start the splitter on boot
+      service:
+        name: uniloader-splitter
+        enabled: true
+
+    - name: build the splitter's brain file
+      template: 
+        src: ./files/splitter.json.j2
+        dest: "{{ splitterfile }}"
+        mode: 0766
+      notify: splitter-restart
+
+    # Autoconfigure QMLive instances - when needed
+    - name: RST 
+      ping:
+
+    - name: Remove all autoconfig contents if we need to do a full autoconfiguration
+      file:
+        state: "{{ item }}"
+        path: "{{ autoconfigdir }}"
+      with_items:
+        - absent
+        - directory
+      when: autoconfigure_always == True
+
+
+    - name: Include a task for each client to synchronize config
+      include_tasks: autoconfigure_qml.yaml
+      loop: "{{ clients | dict2items }}"
+      when: autoconfiguration == True
+
+
+  # Restart handlers
+  handlers:
+    - name: fsw-restart
+      service:
+        name: uniloader-freeswitch
+        state: restarted
+        daemon_reload: yes
+
+
+    - name: splitter-restart
+      service:
+        name: uniloader-splitter
+        state: restarted
+        daemon_reload: yes
+
+

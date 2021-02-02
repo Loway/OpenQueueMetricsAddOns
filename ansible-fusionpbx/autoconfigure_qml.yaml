@@ -1,0 +1,29 @@
+    - name: Autoconfiguring {{ item.key }} = {{ item.value.url }}
+      ping:
+
+    - name: {{ item.key }} - Check if flag file exists 
+      stat: 
+        path: "{{ autoconfigdir }}/autocfg.{{ item.key }}"
+      register: already_done    
+
+    - name: {{ item.key }} - Autoconfiguring {{ item.value.url }}
+      shell: >
+        uniloader pbxinfo 
+        --mode syncqm 
+        --uri {{ item.value.url }}  
+        --login robot 
+        --pass {{ item.value.pass }}  
+        --with-password {{ autoconfigure_agent_pwd }}  
+        fusionpbx 
+        --ps-uri {{  fusion_db }} 
+        --ps-login {{ fusion_login }} 
+        --ps-pwd {{ fusion_pwd }}  
+        --single-tenant {{ item.key }}.{{ default_domain }} 
+        --as-tenant ''
+      when: already_done.stat.exists == False
+
+    - name: {{ item.key }} - Create a flag so we know when this was run last time
+      file:
+        path: "{{ autoconfigdir }}/autocfg.{{ item.key }}"
+        state: touch
+      when: already_done.stat.exists == False
