@@ -14,7 +14,7 @@ Project description
 You have a FusionPBX system with multiple tenants, and you want to set up and manage
 them on multiple QueueMetrics Live instances, one for each of the tenants you define (so you may have some tenants using QML, and some that don't use it, as you best see fit). 
 
-It is easy to gether the benefits of offering your customers a complete call center suite, as described in https://www.queuemetrics-live.com/resellers.jsp - with an easy management of the solution that links together your PBX and QueueMetrics Live.
+It is easy to gather the benefits of offering your customers a complete call center suite, as described in https://www.queuemetrics-live.com/resellers.jsp - anst still have an easy management of the solution that links together your PBX and QueueMetrics Live.
 
 This Ansible task does the following:
 
