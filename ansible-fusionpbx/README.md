@@ -101,7 +101,7 @@ Now edit the section `clients` - the key is the name of the customer's subdomain
 For each client, apart from the usual credentials, we have the values:
 
 - `actions` is whether your QM-Live instance should control agent presence through the Agent's page. 
-  For this to work, the property `callfile.dir` in QueueMetrics must corretly point to the ESL port
+  For this to work, the property `callfile.dir` in QueueMetrics must correctly point to the ESL port
   of your FusionPBX system.
 - `disabled` is used so that you can keep the instance within your configuration file without deleting it; 
   still, a disabled instance will NOT upload data and won't be autoconfigured. 
