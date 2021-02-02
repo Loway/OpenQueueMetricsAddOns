@@ -8,6 +8,8 @@ The following projects are hosted:
 
 ### Ansible splitter
 Controls a set of Uniloader splitters via Ansible
+### Ansible FusionPBX
+Downloads data from a FusionPBX system and pushes it to multiple QueueMetrics Live instances. Pushes configuration automatically (agents and queues) from FusionPBX to each QM instance. 
 ### The Flantel qmon.php wallboard - Version 1.1
 This is the original script, and a QM users' all-time favourite.
 Now patched to support QueueMetrics 15.02.
@@ -38,7 +40,7 @@ See also
 --------
 
 * [Open QueueMetrics Add-Ons forum](http://forum.queuemetrics.com/index.php?board=14.0)
-* [QueueMetrics home page](http://queuemetrics.com)
+* [QueueMetrics home page](https://www.queuemetrics.com)
 
 Other projects you may be interested in
 ---------------------------------------

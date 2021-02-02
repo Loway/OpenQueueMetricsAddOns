@@ -51,7 +51,7 @@ Then edit `splitter-asterisk.yml` and edit the section `clients`:
 	        login: "webqloader"
 	        pass:  "upload"
 
-Each client must be set up so that all queus for "client1" are named eg "1234-client1"  and all agents are like "SIP/103-client1", so that the splitter can split them  correctly. If you need different settings, see `files/splitter.json.j2`.
+Each client must be set up so that all queues for "client1" are named eg "1234-client1"  and all agents are like "SIP/103-client1", so that the splitter can split them  correctly. If you need different settings, see `files/splitter.json.j2`.
 
 To run, just run:
 
