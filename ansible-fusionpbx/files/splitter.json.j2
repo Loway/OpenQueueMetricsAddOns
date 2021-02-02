@@ -11,8 +11,8 @@
 		"matcher": ["{{ c }}-"],
 		"match": "prefix",
 		"removematch": true,
-		"disabled": false,
-		"noactions": true
+		"disabled": {{ clients[c].disabled | ternary('true', 'false') }},
+		"noactions": {{ clients[c].actions | ternary('false', 'true') }}
 	},
 
 {% endfor %}
