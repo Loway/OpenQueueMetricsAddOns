@@ -12,8 +12,7 @@ Project description
 -------------------
 
 You have a FusionPBX system with multiple tenants, and you want to set up and manage
-them on multiple QueueMetrics Live instances, one for each of the tenats you define.
-
+them on multiple QueueMetrics Live instances, one for each of the tenants you define (so you may have some tenants using QM, and some that don't use it).
 
 This Ansible task does the following:
 
@@ -44,12 +43,10 @@ On each QM Live instance, the following settings must be made before starting:
 - User `robot` is enabled to allow remote configuration
 - The settings below are present
 
-----
-platform.pbx=Freeswitch
-default.webloaderpbx=true
-default.hotdesking=0
-callfile.dir=fsw:ClueCon@127.0.0.1
-----
+    platform.pbx=Freeswitch
+    default.webloaderpbx=true
+    default.hotdesking=0
+    callfile.dir=fsw:ClueCon@127.0.0.1
 
 (If you use a different IP address / connection token for your FusionPBX server, set it here).
 
@@ -82,8 +79,7 @@ These are credentials to FusionPBX's own database. If unsure, you can use `unilo
 
 Above, you set up autoconfiguration. If you set `autoconfiguration` to False, it won't be performed. If you set `autoconfigure_always` it will be repeated on each run, while usually it will be done just once. You can set up a default password for your agents, so they can log in into QM; and you must define the domain name used by your FusionPBX instance. When a client is autoconfigured, a flag file to avoid further configurations is created, so you can see when it happened last.
 
-Now edit the section `clients` - the key is the name of the customer's subdomain, (e.g. in this example, "client1" would be the subdomain "client1.company.my") and contains :
-
+Now edit the section `clients` - the key is the name of the customer's subdomain (e.g. in this example, key `client1` would be the subdomain `client1.company.my`) so that it contains all of your QM Live instances. You can add/remove clients as needed.
 
 	    clients:
 	      client1:
