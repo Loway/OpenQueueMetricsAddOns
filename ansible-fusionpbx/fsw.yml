@@ -13,12 +13,6 @@
     fusion_login: "fusionpbx"
     fusion_pwd: "s0mepassw0rd"
 
-    datadir: "/opt/uniloader-splitter" 
-    qlogfile: "{{ datadir }}/queuelog-synth-fsw.txt"
-    eventsfile: "{{ datadir }}/fsw-events.txt"
-    splitterfile: "{{ datadir }}/splitter.json"
-    autoconfigdir: "{{ datadir }}/autocfg"
-
     # Autoconfiguration
     # You need to have user "robot" enabled in QmLive
     # To always force autoconfiguration, we just remove the contents of autoconfigdir
@@ -33,11 +27,21 @@
         url:   "https://my.queuemetrics-live.com/client1/"
         login: "webqloader"
         pass:  "upload"  
+        actions: True
+        disabled: False
       client2:
         url:   "http://my.local:8080/queuemetrics/"
         login: "webqloader"
         pass:  "upload"
-            
+        actions: True
+        disabled: False    
+
+    datadir: "/opt/uniloader-splitter" 
+    qlogfile: "{{ datadir }}/queuelog-synth-fsw.txt"
+    eventsfile: "{{ datadir }}/fsw-events.txt"
+    splitterfile: "{{ datadir }}/splitter.json"
+    autoconfigdir: "{{ datadir }}/autocfg"
+
 
 
   tasks:

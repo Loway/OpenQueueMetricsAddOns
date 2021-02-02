@@ -12,7 +12,9 @@ Project description
 -------------------
 
 You have a FusionPBX system with multiple tenants, and you want to set up and manage
-them on multiple QueueMetrics Live instances, one for each of the tenants you define (so you may have some tenants using QM, and some that don't use it).
+them on multiple QueueMetrics Live instances, one for each of the tenants you define (so you may have some tenants using QML, and some that don't use it, as you best see fit). 
+
+It is easy to gether the benefits of offering your customers a complete call center suite, as described in https://www.queuemetrics-live.com/resellers.jsp - with an easy management of the solution that links together your PBX and QueueMetrics Live.
 
 This Ansible task does the following:
 
@@ -87,20 +89,29 @@ Now edit the section `clients` - the key is the name of the customer's subdomain
 	        url:   "https://my.queuemetrics-live.com/client1/"
 	        login: "webqloader"
 	        pass:  "upload"  
+            actions: True
+            disabled: False
 	      client2:
 	        url:   "https://us.queuemetrics-live.com/client2/"
 	        login: "webqloader"
 	        pass:  "upload"
+            actions: False
+            disabled: False
+
+For each client, apart from the usual credentials, we have the values:
+
+- `actions` is whether your QM-ive instance should control agent presence through the Agent's page.
+- `disabled` is used so that you can keep the instance within our counfiguration file without deleting it; 
+  still, a disabled instance will NOT upload data and won't be autoconfigured. 
 
 
-To run, just run:
+To run the script, just run:
 
 		ansible-playbook -i ansible-hosts \
 		       --private-key ~/zebraman_key -u zebraman --become-user root \
 		       fsw.yml
 
-
-This logs in into each box as user "zebraman", becomes root, and then runs the script.
+This logs in into each box as user "zebraman", becomes root, and then performs all needed changes. As the script is idempotent, it will only perform changes when needed - usually when you make changes to the configuration.
 
 Authors
 -------
