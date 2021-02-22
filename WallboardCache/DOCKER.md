@@ -8,7 +8,7 @@ On the server
 Then run:
 
 
-	docker run -e DELAY=15 -e "URL=https://us.queuemetrics-live.com:443/unk/qm_wab2.do?user=robot&pass=123&queues=500&wallboardId=17" -p 8080:3000  -d wb
+	docker run -e DELAY=15 -e "URL=https://us.queuemetrics-live.com:443/unk/qm_wab2.do?user=robot&pass=123&queues=500&wallboardId=17" -p 8080:3000  -d loway/wbcache
 
 That will expose the URL specified to port 8080 as wallboard "wb".
 
