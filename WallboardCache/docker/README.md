@@ -1,3 +1,0 @@
-# Runing with Docker
-
-
