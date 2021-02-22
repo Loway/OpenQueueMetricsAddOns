@@ -10,7 +10,7 @@ const puppeteer = require("puppeteer-core"),
 const my_qm =
   "https://**.queuemetrics-live.com:443/****/qm_wab2.do?user=robot&pass=****&";
 
-const WALLBOARDS = {
+const SAMPLE_WALLBOARDS = {
   plain:
     my_qm +
     "queues=500%7C501%7C502%7C770%7C771%7C772%7Cpark-default&wallboardId=17",
@@ -19,14 +19,21 @@ const WALLBOARDS = {
     "queues=500%7C501%7C502%7C770%7C771%7C772%7Cpark-default&wallboardId=16",
   hn: "https://news.ycombinator.com/"
 };
+
+
+const WALLBOARDS = process.env.URL 
+  ? {wb: process.env.URL } 
+  : SAMPLE_WALLBOARDS;
+
+
 //
 // Misc settings
 //
-const delay = 5000;
-const localChrome =
+const delay = (process.env.DELAY * 1000) ||  5000;
+const localChrome = process.env.CHROME ||
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const extra_args = []; // ["--disable-setuid-sandbox", "--no-sandbox"]
-const workspace = "./workspace";
+const workspace = process.env.WORKSPACE || "./workspace";
 const images = workspace + "/image_";
 const sessions = workspace + "/session_";
 
