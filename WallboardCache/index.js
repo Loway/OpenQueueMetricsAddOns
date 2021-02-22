@@ -183,7 +183,7 @@ async function browser(name, page_url) {
     const imageFile = images + name + ".png"
 
     await page.screenshot({ path: imageFile });
-	console.log("Scritto %s", imageFile);
+    // console.log("Scritto %s", imageFile);
     await sleep(delay);
   }
   await browser.close();
