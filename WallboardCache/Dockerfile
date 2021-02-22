@@ -8,8 +8,14 @@ RUN curl https://intoli.com/install-google-chrome.sh | bash
 RUN yum install -y nodejs
 
 RUN mkdir -p /opt/wbcache
-RUN mkdir -p /opt/wbcache/images
-COPY ../index.js /opt/wbcache
+RUN mkdir -p /opt/wbcache/work
+COPY ./index.js  /opt/wbcache
+COPY ./docker_runner.sh /opt/wbcache
+COPY ./package.json /opt/wbcache
+RUN cd /opt/wbcache/ && npm install
 
-CMD /bin/bash
+EXPOSE 3000
+
+CMD /opt/wbcache/docker_runner.sh
+
 
