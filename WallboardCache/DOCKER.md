@@ -18,7 +18,7 @@ In QM:
 	realtime.agent_webpanel1_url=http://server:8080/?wb=wb&agent=[a]
 	realtime.agent_webpanel1_label=My wallboard
 
-
+More information on the Docker image is available at https://hub.docker.com/repository/docker/loway/wbcache
 
 ## Developing
 

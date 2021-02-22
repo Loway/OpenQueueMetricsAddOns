@@ -95,6 +95,8 @@ You can avoid the setup and all the fun above by running:
 
 	docker run -e "URL=https://us.queuemetrics-live.com:443/unk/qm_wab2.do?user=robot&pass=123&queues=500&wallboardId=17" -p 3000:3000  -d loway/wbcache
 
+More information on the Docker image is available at https://hub.docker.com/repository/docker/loway/wbcache
+
 
 ### Set up in QueueMetrics
 
