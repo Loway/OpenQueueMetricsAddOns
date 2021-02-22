@@ -20,21 +20,20 @@ const SAMPLE_WALLBOARDS = {
   hn: "https://news.ycombinator.com/"
 };
 
-
-const WALLBOARDS = process.env.URL 
-  ? {wb: process.env.URL } 
+const WALLBOARDS = process.env.URL
+  ? { wb: process.env.URL }
   : SAMPLE_WALLBOARDS;
-
 
 //
 // Misc settings
 //
-const delay = (process.env.DELAY * 1000) ||  5000;
-const localChrome = process.env.CHROME ||
+const delay = process.env.DELAY * 1000 || 5000;
+const localChrome =
+  process.env.CHROME ||
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-const extra_args = process.env.ROOT 
-       ? ["--disable-setuid-sandbox", "--no-sandbox"] 
-       : [];
+const extra_args = process.env.ROOT
+  ? ["--disable-setuid-sandbox", "--no-sandbox"]
+  : [];
 const workspace = process.env.WORKSPACE || "./workspace";
 const images = workspace + "/image_";
 const sessions = workspace + "/session_";
@@ -57,7 +56,7 @@ function ue(s) {
 // Returns a given image by name
 function sendImage(response, name, agent) {
   console.log("Agent '%s' is requesting wallboard '%s'", agent, name);
-  var filePath = images + name + ".png" ; // path.join(__dirname, images + name + ".png");
+  var filePath = images + name + ".png"; // path.join(__dirname, images + name + ".png");
   var stat = fileSystem.statSync(filePath);
 
   response.writeHead(200, {
@@ -180,7 +179,7 @@ async function browser(name, page_url) {
 
   while (true) {
     console.log("Taking a screenshot of wallboard '%s'", name);
-    const imageFile = images + name + ".png"
+    const imageFile = images + name + ".png";
 
     await page.screenshot({ path: imageFile });
     // console.log("Scritto %s", imageFile);
