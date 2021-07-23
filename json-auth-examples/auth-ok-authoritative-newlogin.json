@@ -1,0 +1,11 @@
+
+{
+	"login": "Agent/12345678",
+	"response": "A",
+	"realname": "John Doe",
+	"email": "john@home",
+	"classname": "AGENTS",
+	"keys": "A B -C",
+	"_": "Log on this person, creating an account as Agent/12345678 for them on QM."
+}
+
