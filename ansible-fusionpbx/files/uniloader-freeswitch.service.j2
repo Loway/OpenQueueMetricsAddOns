@@ -17,7 +17,7 @@ ExecStart=/bin/uniloader fsw \
          --host "{{ fsw_host }}" --port "{{ fsw_port }}" --auth "{{ fsw_auth }}" \
          --queuelog "{{ qlogfile }}" \
          --ps-uri "{{ fusion_db }}" --ps-login "{{ fusion_login }}" --ps-pwd "{{ fusion_pwd }}" \
-         --shorten-domain 1 \
+         --shorten-domain 1 --use-addmember 1 \
          --pid /var/run/uniloader-freeswitch.pid \
          --events "{{ eventsfile }}"
 
