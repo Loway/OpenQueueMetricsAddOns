@@ -20,6 +20,8 @@ __Disadvantages:__
 - Requires a separate rendering server
 
 
+To get started quickly, see the tutorial at https://www.queuemetrics.com/blog/2021/02/24/Wallboard-cache-tutorial/
+
 ## Prerequisites
 
 __Google Chrome__
