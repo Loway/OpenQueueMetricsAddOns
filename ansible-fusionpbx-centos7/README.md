@@ -1,9 +1,6 @@
 Setting up and managing a FusionPBX/QueueMetrics link with Ansible
 ==================================================================
 
-WORK IN PROGRESS
-
-
 ```
 Project version: 1.0 
 Runtime environment: CentOS 7 
