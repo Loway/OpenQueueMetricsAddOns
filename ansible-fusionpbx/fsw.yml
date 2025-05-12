@@ -1,0 +1,350 @@
+---
+- hosts: fusion
+  become: yes
+  #become_user: root
+  #become_method: sudo
+
+
+
+  vars:  
+    # Which version of Uniloader to use.
+    uniloader_version: "24.11.4"
+    
+    # The ESL port on Freeswitch
+    fsw_host: "127.0.0.1"
+    fsw_port: "8021"
+    fsw_auth: "ClueCon"
+
+    # Credentials to connect to Postgres DB used by Fusion
+    fusion_db: "127.0.0.1/fusionpbx?sslmode=disable"
+    fusion_login: "fusionpbx"
+    fusion_pwd: "----"
+
+    # Filters for outbound tracking
+    outbound_include_caller: ""
+    outbound_exclude_caller: ""
+    outbound_include_callee: "^9.+"
+    outbound_exclude_callee: ""
+
+    # AudioVault
+    # You have to escape all "%" characters to "%%"
+    audiovault: True
+    av_port: "localhost:4040"
+    av_public_url: "https://tenant1.mysrv.my/audiovault"
+    av_path: "file:/var/lib/freeswitch/recordings/%%TE/archive/%%YY/%%ME/%%DD"
+    av_token: "CHANGEME"
+      
+    # Autoconfiguration
+    # You need to have user "robot" enabled in QmLive
+    # To always force autoconfiguration, we just remove the contents of autoconfigdir
+    autoconfiguration: True
+    autoconfigure_always: False
+    autoconfigure_agent_pwd: "v3rys3cret"
+    default_domain: "mysrv.my"    
+
+    # Here are all of our clients
+    # name is the id of the tenant + default domain
+    clients:
+      tenant1:
+        url:   "https://stats.mysr.my/t1popk/"
+        login: "webqloader"
+        pass:  "pippo"  
+        actions: True
+        disabled: False
+        av_secret: "x1x1secret"
+        refresh: ""
+
+      tenant1:
+        url:   "https://stats.mysr.my/t2popk/"
+        login: "webqloader"
+        pass:  "pippo"  
+        actions: True
+        disabled: False
+        av_secret: "x1x1secret"
+        refresh: ""
+
+    # Misc directories
+    #download_url: "https://downloads.loway.ch/software/uniloader/uniloader-{{ uniloader_version }}.tar.gz"
+    download_url: "https://downloads.loway.ch/beta/uniloader-{{ uniloader_version }}.tar.gz"
+    uniloader_dir: "/opt/uniloader"
+    uniloader_current_dir: "{{ uniloader_dir }}/uniloader-{{ uniloader_version }}"
+
+    datadir: "/opt/fusion-splitter-data" 
+    qlogfile: "{{ datadir }}/queuelog-synth-fsw.txt"
+    #eventsfile: "{{ datadir }}/fsw-events-agent999addedto400.txt"
+    eventsfile: "/dev/null"
+    splitterfile: "{{ datadir }}/splitter.json"
+    av_tenants: "{{ datadir }}/audiovault-tenants.json"
+    autoconfigdir: "{{ datadir }}/autocfg"
+
+
+  tasks:
+    - name: test connection
+      ping:
+      #remote_user: root
+
+
+    - name: RST
+      ping: 
+
+    - name: Install software if Debian
+      ansible.builtin.package:
+        name:
+          - mc
+          - jq
+          - curl
+          - wget
+          - lsof
+          - screen
+          - logrotate
+        state: present
+      when: ansible_facts.os_family == "Debian"
+
+    - name: Install software if CentOS
+      ansible.builtin.package:
+        name:
+          - mc
+          - jq
+          - curl
+          - wget
+          - lsof
+          - screen
+          - logrotate
+        state: present
+      when: ansible_facts.os_family == "RedHat"
+
+        
+    #Create a folder for logs
+    - name: Create work folders
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - "{{ datadir }}"
+        - "{{ autoconfigdir }}"
+        - "{{ uniloader_dir }}"
+
+
+    # install Uniloader if needed
+    - name: Check if current version of Uniloader installed
+      stat:
+        path: "{{ uniloader_current_dir }}"
+      register: ul_folder
+
+    - name: Download Uniloader tgz if does not exist
+      get_url:
+        url: "{{ download_url }}"
+        dest: "{{ uniloader_dir }}"
+      when: not ul_folder.stat.exists
+
+    - name: Crea la directory di estrazione se non esiste
+      file:
+        path: "{{ uniloader_current_dir }}"
+        state: directory
+      when: not ul_folder.stat.exists  # Crea solo se abbiamo scaricato il file
+
+    - name: Scompatta il file TGZ
+      command: "tar zxvf {{ uniloader_dir }}/uniloader-{{ uniloader_version}}.tar.gz -C {{ uniloader_current_dir }} --strip-components=2"
+      when: not ul_folder.stat.exists
+      register: unarchive_result
+      changed_when: unarchive_result.rc != 0
+
+    - name: Remove the old symlink (if exists)
+      file:
+        path: "/usr/bin/uniloader"
+        state: absent
+      when: not ul_folder.stat.exists
+
+    - name: Crea il symlink al comando sotto /usr/bin
+      file:
+        src: "{{ uniloader_current_dir }}/bin/uniloader_amd64"
+        dest: "/usr/bin/uniloader"
+        state: link
+      when: not ul_folder.stat.exists
+
+
+
+
+    # Environment checks    
+    - name: Check ESL connection works
+      command: "uniloader test fsw-esl --host {{ fsw_host }} --port {{ fsw_port }} --auth {{ fsw_auth }}"
+      register: esl_result
+      
+    - name: Assert that the ESL check output contains the expected string
+      assert:
+        that: "'= Logging off' in esl_result.stderr"
+        fail_msg: "ESL connection failed"
+
+    - name: Check Postgres connection works
+      command: "uniloader test postgres --ps-uri {{ fusion_db }} --ps-login {{ fusion_login }} --ps-pwd {{ fusion_pwd }}"
+      register: pg_result
+      
+    - name: Assert that the ESL check output contains the expected string
+      assert:
+        that: "'- All went well' in pg_result.stderr"
+        fail_msg: "ESL connection failed"
+
+
+
+
+
+    #Create a folder for logs
+    - name: Create empty qlog folder  
+      file:
+        path: "{{ qlogfile }}"
+        state: touch
+
+
+
+
+    # freeswitch
+    - name: install uniloader-freeswitch systemd unit file
+      template: 
+        src: ./files/uniloader-freeswitch.service.j2
+        dest: /etc/systemd/system/uniloader-freeswitch.service
+      notify: fsw-restart
+
+    - name: start the service (if not started)
+      systemd: state=started daemon_reload=yes name=uniloader-freeswitch    
+
+    - name: start on boot
+      service:
+        name: uniloader-freeswitch
+        enabled: true
+
+    - name: Create logrotate configuration file for qlog-synth.txt
+      ansible.builtin.copy:
+        dest: /etc/logrotate.d/rotate_weekly
+        content: |
+          {{ qlogfile }} {
+              weekly
+              rotate 50
+              missingok
+              notifempty
+              create 0644 root root
+              dateext
+              delaycompress
+              compress
+          }
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Set logrotate to run weekly at 3 AM on Sunday for qlog-synth.txt
+      ansible.builtin.cron:
+        name: "logrotate weekly"
+        job: "/usr/sbin/logrotate -f /etc/logrotate.d/rotate_weekly"
+        weekday: "0"  # Sunday
+        hour: "3"
+        minute: "0"
+        user: root
+
+    # splitter
+    - name: build the splitter's brain file
+      template: 
+        src: ./files/splitter.json.j2
+        dest: "{{ splitterfile }}"
+        mode: 0766
+      notify: splitter-restart
+
+    - name: install uniloader-splitter systemd unit file
+      template: 
+        src: ./files/uniloader-splitter.service.j2
+        dest: /etc/systemd/system/uniloader-splitter.service
+      notify: splitter-restart
+
+    - name: start the service (if not started)
+      systemd: state=started daemon_reload=yes name=uniloader-splitter   
+
+    - name: start the splitter on boot
+      service:
+        name: uniloader-splitter
+        enabled: true
+
+
+
+
+    # audiovault
+    - name: build the audiovault's tenant file
+      template: 
+        src: ./files/audiovault-tenants.json.j2
+        dest: "{{ av_tenants }}"
+        mode: 0766
+      notify: audiovault-restart
+      when: audiovault
+
+    - name: install uniloader-audiovault systemd unit file
+      template: 
+        src: ./files/uniloader-audiovault.service.j2
+        dest: /etc/systemd/system/uniloader-audiovault.service
+      notify: audiovault-restart
+      when: audiovault
+
+    - name: start uniloader-audiovault service (if not started)
+      systemd: state=started daemon_reload=yes name=uniloader-audiovault   
+      when: audiovault
+
+    - name: start uniloader-audiovault on boot
+      service:
+        name: uniloader-audiovault
+        enabled: true
+      when: audiovault
+
+
+    # resync sessions at midnight
+    - name: Create cron job to sync agent sessions just after midnight
+      ansible.builtin.cron:
+        name: "sync_agent_sessions"
+        minute: "1"
+        hour: "0"
+        job: "/usr/bin/uniloader fs-queue sync --host {{ fsw_host }} --port {{ fsw_port }} --auth {{ fsw_auth }}"
+
+
+  #  - name: Interrompi il playbook se la condizione è vera
+  #    meta: end_play
+  #    when: True
+
+
+
+
+
+    # Autoconfigure QMLive instances - when needed
+  
+    - name: Remove all autoconfig contents if we need to do a full autoconfiguration
+      file:
+        state: "{{ item }}"
+        path: "{{ autoconfigdir }}"
+      with_items:
+        - absent
+        - directory
+      when: autoconfigure_always == True
+
+
+    - name: Include a task for each client to synchronize config
+      include_tasks: fsw_autoconfigure_qml_instance.yaml
+      loop: "{{ clients | dict2items }}"
+      when: autoconfiguration == True
+
+
+  # Restart handlers
+  handlers:
+    - name: fsw-restart
+      service:
+        name: uniloader-freeswitch
+        state: restarted
+        daemon_reload: yes
+
+
+    - name: splitter-restart
+      service:
+        name: uniloader-splitter
+        state: restarted
+        daemon_reload: yes
+
+    - name: audiovault-restart
+      service:
+        name: uniloader-audiovault
+        state: restarted
+        daemon_reload: yes
+
+

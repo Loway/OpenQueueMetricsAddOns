@@ -1,0 +1,24 @@
+#
+# Systemd Unit for Uniloader
+#
+
+[Unit]
+Description=Loway Uniloader {{ uniloader_version }} - Splitter
+After=syslog.target network.target
+
+[Service]
+Type=simple
+Nice=15
+KillMode=process
+ExecStart=/usr/bin/uniloader \
+    --src {{ qlogfile }}  \
+    upload --uri "{{ '' }}"  \
+    --noActions \
+    --splitter {{ splitterfile }}
+
+RestartSec=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

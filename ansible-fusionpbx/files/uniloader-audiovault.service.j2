@@ -1,0 +1,25 @@
+#
+# Systemd Unit for Uniloader Audiovault
+#
+# Ref. https://docs.loway.ch/Uniloader/
+#
+#
+
+[Unit] 
+Description=Loway Uniloader {{ uniloader_version }} - AudioVault 
+After=syslog.target network.target
+
+
+[Service]
+Type=simple
+#EnvironmentFile=/etc/audiovault
+Nice=15
+KillMode=process
+ExecStart=/usr/bin/uniloader av serve \
+              --bind-to "{{ av_port }}" --public-url "{{ av_public_url }}" \
+              --path '{{ av_path }}' --token "{{ av_token }}" --tenants "{{ av_tenants }}"
+RestartSec=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

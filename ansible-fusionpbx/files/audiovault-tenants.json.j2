@@ -1,0 +1,21 @@
+
+[
+
+{% for c in clients %}
+
+	{
+          "tenant": "{{ c }}.{{ default_domain }}",
+          "secret": "{{ clients[c].av_secret }}",
+          "note":   "Instance {{ clients[c].url }}"
+     },	
+
+{% endfor %}
+
+	{
+          "tenant": "Ignore me for Uniloader {{ uniloader_version}}",
+          "secret": "N0b0dyKn0ws",
+          "note":   "Dummy closing entry"
+     }
+
+]
+

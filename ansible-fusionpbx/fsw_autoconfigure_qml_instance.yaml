@@ -1,0 +1,35 @@
+    - name: Autoconfiguring {{ item.key }} = {{ item.value.url }}
+      set_fact:
+        unique: "{{ autoconfigdir }}/autocfg-{{ item.key }}.{{ item | to_json | hash('sha256') }}"
+
+    - name: K "{{ item.key }}" - Check if flag file exists 
+      stat: 
+        path: "{{ unique }}"
+      register: already_done    
+
+    - name: K "{{ item.key }}" - Checking data upload credentials 
+      shell: >
+        uniloader test upload --uri {{ item.value.url }} --login {{ item.value.login}} --pass {{ item.value.pass }}
+      when: already_done.stat.exists == False and item.value.disabled == False
+
+    - name: K "{{ item.key }}" - Autoconfiguring agents and queues 
+      shell: >
+        uniloader pbxinfo 
+        --mode syncqm 
+        --uri {{ item.value.url }}  
+        --login robot 
+        --pass {{ item.value.pass }}  
+        --with-password {{ autoconfigure_agent_pwd }}  
+        fusionpbx 
+        --ps-uri {{  fusion_db }} 
+        --ps-login {{ fusion_login }} 
+        --ps-pwd {{ fusion_pwd }}  
+        --single-tenant {{ item.key }}.{{ default_domain }} 
+        --as-tenant ''
+      when: already_done.stat.exists == False and item.value.disabled == False
+
+    - name: K "{{ item.key }}" - Create a flag so we know that it was run previously with the same parms
+      file:
+        path: "{{ unique }}"
+        state: touch
+      when: already_done.stat.exists == False and item.value.disabled == False
