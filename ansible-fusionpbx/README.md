@@ -1,13 +1,10 @@
 Setting up and managing a FusionPBX/QueueMetrics link with Ansible
 ==================================================================
 
-WORK IN PROGRESS
-
 
 ```
 Project version: 1.0 
-Runtime environment: Debian 12 (Bookworm) - CentOS 9
-                     Requires FusionPBX 5.3+
+Runtime environment: Debian 12 (Bookworm) - CentOS/Rocky Linux 9
 Licence: Public domain
 ```
 See the [changelog](CHANGELOG.md).
@@ -41,6 +38,7 @@ Requirements
 ------------
 
 * Ansible 2+ (tested with 2.14)
+* FusionPBX 5.3 or newer
 * A Debian or CentOS target system; while it could be the FusionPBX system itself, we suggest using a separate virtual host to avoid any interference with the main PBX.
 * Works with QueueMetrics Live instances (no changes) and with local QueueMetrics system, as long as they are 
   set up for web data upload.
@@ -58,7 +56,7 @@ Requirements
     cd OpenQueueMetricsAddOns/ansible-fusionpbx
 
 
-**Downloading for CentOS**
+**Downloading for CentOS/Rocky Linux**
 
     yum install ansible git tar wget
 
@@ -76,20 +74,20 @@ On each QueueMetrics instance, the following settings must be made before starti
 - The settings below are present.
 
 
-    platform.freeswitch.tenant=tenant1.popk.net
-    callfile.dir=fsw:ClueCon@127.0.0.1:8021
+        platform.freeswitch.tenant=tenant1.popk.net
+        callfile.dir=fsw:ClueCon@127.0.0.1:8021
 
-    default.hotdesking=0
-    platform.pbx=FREESWITCH_LIVE
+        default.hotdesking=0
+        platform.pbx=FREESWITCH_LIVE
 
-    platform.freeswitch.use_external_ref=true
-    platform.freeswitch.verbose=true
-    platform.freeswitch.addmember=true
-    platform.freeswitch.use_external_ref=true
-    platform.freeswitch.agentChannel={qm_queue=${q},origination_caller_id_number=1973,origination_caller_id_name=QM-${q},enable_early_media=true}user/${num}
-    platform.freeswitch.destinationNumber=${num}
-    platform.freeswitch.spychannel={qm_ignore=1,origination_caller_id_name=Spy_q${q}_q${a}}user/${num}
-    platform.freeswitch.spycmd=queue_dtmf:w${spymode}@500,eavesdrop:${callid}
+        platform.freeswitch.use_external_ref=true
+        platform.freeswitch.verbose=true
+        platform.freeswitch.addmember=true
+        platform.freeswitch.use_external_ref=true
+        platform.freeswitch.agentChannel={qm_queue=${q},origination_caller_id_number=1973,origination_caller_id_name=QM-${q},enable_early_media=true}user/${num}
+        platform.freeswitch.destinationNumber=${num}
+        platform.freeswitch.spychannel={qm_ignore=1,origination_caller_id_name=Spy_q${q}_q${a}}user/${num}
+        platform.freeswitch.spycmd=queue_dtmf:w${spymode}@500,eavesdrop:${callid}
 
 
 (If you use a different IP address / connection token for your FusionPBX server, set it here).
@@ -172,7 +170,7 @@ For each client, apart from the usual credentials, we have the values:
 - `disabled` is used so that you can keep the instance within your configuration file without deleting it; 
   still, a disabled instance will NOT upload data and won't be autoconfigured. 
 - `av_secret` - the authorization code to be used to access AudioVault for this tenant
-- `refresh` - when you add a new value, automatic configuration will be forced. As this is cached, it is imprertant that you do no recycle the same refresh value - you could e.g. use a progressive date like `250516a`
+- `refresh` - when you add a new value, automatic configuration will be forced. As this is cached, it is important that you do not recycle the same refresh value - you could e.g. use a progressive date like `250516a` to avoid duplicates.
 
 
 Running
@@ -182,8 +180,8 @@ To run the script:
 - if you want to install on a remote server, first edit the file `ansible-hosts` to decide on which server(s) to install. 
 - if you want to install on the same system, edit `fsw.yml` so that it says:
 
-    - hosts: localhost
-      connection: local    
+        - hosts: localhost
+          connection: local    
 
 To install on the same server, use "localhost".
 
