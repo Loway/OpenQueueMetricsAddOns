@@ -47,6 +47,28 @@ Requirements
 * One or more QueueMetrics Live instances
 
 
+
+
+**Downloading for Debian**
+
+    apt-get update
+    apt-get install ansible git tar wget
+
+    git clone https://github.com/Loway/OpenQueueMetricsAddOns.git
+    cd OpenQueueMetricsAddOns/ansible-fusionpbx
+
+
+**Downloading for CentOS**
+
+    yum install ansible git tar wget
+
+    git clone https://github.com/Loway/OpenQueueMetricsAddOns.git
+    cd OpenQueueMetricsAddOns/ansible-fusionpbx
+
+
+
+
+
 On each QueueMetrics instance, the following settings must be made before starting:
 
 - User `robot` is enabled to allow remote configuration and has security keys `USR_QUEUE USR_AGENT USRADMIN`.
@@ -156,9 +178,16 @@ For each client, apart from the usual credentials, we have the values:
 Running
 -------
 
-To run the script, first edit the file `ansible-hosts` to decide on which server to install. To install on the same server, use "localhost".
+To run the script:
+- if you want to install on a remote server, first edit the file `ansible-hosts` to decide on which server(s) to install. 
+- if you want to install on the same system, edit `fsw.yml` so that it says:
 
-To run the scrip, just run:
+    - hosts: localhost
+      connection: local    
+
+To install on the same server, use "localhost".
+
+To run the script, just run:
 
     ./run.sh
 
