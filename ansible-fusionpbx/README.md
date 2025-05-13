@@ -6,7 +6,8 @@ WORK IN PROGRESS
 
 ```
 Project version: 1.0 
-Runtime environment: Debiano 12 (Bookworm) - Required FusionPBX 5.3+
+Runtime environment: Debian 12 (Bookworm) - CentOS 9
+                     Requires FusionPBX 5.3+
 Licence: Public domain
 ```
 See the [changelog](CHANGELOG.md).
@@ -22,10 +23,14 @@ It is easy to gather the benefits of offering your customers a complete call cen
 This Ansible task does the following:
 
 - connects to each FusionPBX system
-- installs Uniloader via `yum`
+- installs or updates Uniloader 
+- checks that all supplied credentials are valid
 - installs service `uniloader-freeswitch` to download events from FusionPBX and starts it at boot
+- sets log rotation
 - installs service `uniloader-splitter` to send the correct events to each tenant and starts it at boot
-- creates a splitter file with your rules on each box
+- installs `audiovault`
+- creates a splitter file with your rules on each machine
+- creates an AudioVault configuration file
 - restarts the services to pick up changes if needed
 - pulls configuration data (queues and agents) from each FusionPBX tenant and pushes them to the correct
   QueueMetrics Live instance, so that they remain in sync. This can be done on each run or just once
@@ -35,26 +40,47 @@ This Ansible task does the following:
 Requirements
 ------------
 
-* Ansible 2+
-* A CentOS 7 target system; while it could be the FusionPBX system itself, we suggest using a separate virtual host to avoid any interference with the main PBX.
+* Ansible 2+ (tested with 2.14)
+* A Debian or CentOS target system; while it could be the FusionPBX system itself, we suggest using a separate virtual host to avoid any interference with the main PBX.
 * Works with QueueMetrics Live instances (no changes) and with local QueueMetrics system, as long as they are 
   set up for web data upload.
 * One or more QueueMetrics Live instances
 
 
+On each QueueMetrics instance, the following settings must be made before starting:
 
-On each QM Live instance, the following settings must be made before starting:
-
-- User `robot` is enabled to allow remote configuration
+- User `robot` is enabled to allow remote configuration and has security keys `USR_QUEUE USR_AGENT USRADMIN`.
+- An outbound queue named `OUTBOUND` is added
 - The settings below are present.
 
 
-    platform.pbx=Freeswitch
-    default.webloaderpbx=true
+    platform.freeswitch.tenant=tenant1.popk.net
+    callfile.dir=fsw:ClueCon@127.0.0.1:8021
+
     default.hotdesking=0
-    callfile.dir=fsw:ClueCon@127.0.0.1
+    platform.pbx=FREESWITCH_LIVE
+
+    platform.freeswitch.use_external_ref=true
+    platform.freeswitch.verbose=true
+    platform.freeswitch.addmember=true
+    platform.freeswitch.use_external_ref=true
+    platform.freeswitch.agentChannel={qm_queue=${q},origination_caller_id_number=1973,origination_caller_id_name=QM-${q},enable_early_media=true}user/${num}
+    platform.freeswitch.destinationNumber=${num}
+    platform.freeswitch.spychannel={qm_ignore=1,origination_caller_id_name=Spy_q${q}_q${a}}user/${num}
+    platform.freeswitch.spycmd=queue_dtmf:w${spymode}@500,eavesdrop:${callid}
+
 
 (If you use a different IP address / connection token for your FusionPBX server, set it here).
+
+For AudioVault, also add:
+
+    audio.server=it.loway.app.queuemetrics.callListen.listeners.JsonListener
+    audio.jsonlistener.url=https://fusionpbx.company.my/audiovault/search/?tenant=tenant1.popk.net
+    audio.jsonlistener.method=POST
+    audio.jsonlistener.searchtoken=x1x1secret
+    audio.jsonlistener.verbose=false
+    audio.html5player=true
+
 
 
 
@@ -64,7 +90,11 @@ Usage istructions
 First define your set of FusionPBX systems in `ansible-hosts`. You can go from one server to as many as you want.
 
 Then edit `fsw.yml` and edit the section `vars`:
-    
+
+    uniloader_version: "25.05.1"
+
+THe version of Uniloader to use. Must be 25.05+
+
     fsw_host: "10.10.1.119"
     fsw_port: "8021"
     fsw_auth: "ClueCon"
@@ -78,12 +108,19 @@ These are the IP address, token and port for your Freeswitch server. If unsure, 
 
 These are credentials to FusionPBX's own database. If unsure, you can use `uniloader test postgres --ps-uri 127.0.0.1/fusionpbx?sslmode=disable --ps-login fusionpbx --ps-pwd s0mepassw0rd` to check them.
 
+    outbound_include_caller: ""
+    outbound_exclude_caller: ""
+    outbound_include_callee: "^9.+"
+    outbound_exclude_callee: ""
+
+The rules (regexps) to include outbound calls (with automated tracking). In the example above, we include all calls where the destination number starts with a 9.
+
     autoconfiguration: True
     autoconfigure_always: False
     autoconfigure_agent_pwd: "v3rys3cret"
     default_domain: "company.my"    
 
-Above, you set up autoconfiguration. If you set `autoconfiguration` to False, it won't be performed. If you set `autoconfigure_always` it will be repeated on each run, while usually it will be done just once. You can set up a default password for your agents, so they can log in into QM; and you must define the domain name used by your FusionPBX instance. When a client is autoconfigured, a flag file to avoid further configurations is created, so you can see when it happened last.
+Above, you set up autoconfiguration. If you set `autoconfiguration` to False, it won't be performed. If you set `autoconfigure_always` it will be repeated on each run, while usually it will be done just once, or when a clietnt's parameters change. You can set up a default password for your agents, so they can log in into QM; and you must define the domain name used by your FusionPBX instance. When a client is autoconfigured, a flag file to avoid further configurations is created, so you can see when it happened last.
 
 Now edit the section `clients` - the key is the name of the customer's subdomain (e.g. in this example, key `client1` would be the subdomain `client1.company.my`) so that it contains all of your QM Live instances. You can add/remove clients as needed.
 
@@ -94,12 +131,16 @@ Now edit the section `clients` - the key is the name of the customer's subdomain
 	        pass:  "upload"  
             actions: True
             disabled: False
+            av_secret: "x1x1secret"
+            refresh: ""
 	      client2:
 	        url:   "https://us.queuemetrics-live.com/client2/"
 	        login: "webqloader"
 	        pass:  "upload"
             actions: False
             disabled: False
+            av_secret: "x2x2secret"
+            refresh: ""
 
 For each client, apart from the usual credentials, we have the values:
 
@@ -108,9 +149,20 @@ For each client, apart from the usual credentials, we have the values:
   of your FusionPBX system.
 - `disabled` is used so that you can keep the instance within your configuration file without deleting it; 
   still, a disabled instance will NOT upload data and won't be autoconfigured. 
+- `av_secret` - the authorization code to be used to access AudioVault for this tenant
+- `refresh` - when you add a new value, automatic configuration will be forced. As this is cached, it is imprertant that you do no recycle the same refresh value - you could e.g. use a progressive date like `250516a`
 
 
-To run the script, just run:
+Running
+-------
+
+To run the script, first edit the file `ansible-hosts` to decide on which server to install. To install on the same server, use "localhost".
+
+To run the scrip, just run:
+
+    ./run.sh
+
+That is just a shortcut for a full Ansible commandline like the following:
 
 		ansible-playbook -i ansible-hosts \
 		       --private-key ~/zebraman_key -u zebraman --become-user root \
@@ -128,4 +180,5 @@ See also
 
 * [QueueMetrics home page](https://www.queuemetrics.com)
 * [FusionPBX home page](https://www.fusionpbx.com/)
-* [Uniloader manual](https://manuals.loway.ch/Uniloader-chunked/)
+* [Uniloader manual](https://docs.loway.ch/Uniloader/index.html)
+* [AudioVault](https://docs.loway.ch/Uniloader/087_AudioVault.html)
