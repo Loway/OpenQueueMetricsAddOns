@@ -8,7 +8,7 @@
 
   vars:  
     # Which version of Uniloader to use.
-    uniloader_version: "24.11.4"
+    uniloader_version: "24.11.5"
     
     # The ESL port on Freeswitch
     fsw_host: "127.0.0.1"
@@ -29,10 +29,13 @@
     # AudioVault
     # You have to escape all "%" characters to "%%"
     audiovault: True
-    av_port: "localhost:4040"
-    av_public_url: "https://tenant1.mysrv.my/audiovault"
+    av_host: ""
+    av_port: "4040"
+    av_public_url: "https://tenant1.mysrv.my"
     av_path: "file:/var/lib/freeswitch/recordings/%%TE/archive/%%YY/%%ME/%%DD"
     av_token: "CHANGEME"
+    av_cert: "/etc/dehydrated/certs/popk.net/fullchain.pem"
+    av_cert_key: "/etc/dehydrated/certs/popk.net/privkey.pem"
       
     # Autoconfiguration
     # You need to have user "robot" enabled in QmLive
@@ -54,14 +57,15 @@
         av_secret: "x1x1secret"
         refresh: ""
 
-      tenant1:
+      tenant2:
         url:   "https://stats.mysr.my/t2popk/"
         login: "webqloader"
-        pass:  "pippo"  
+        pass:  "pluto"  
         actions: True
         disabled: False
-        av_secret: "x1x1secret"
+        av_secret: "x2x2secret"
         refresh: ""
+
 
     # Misc directories
     #download_url: "https://downloads.loway.ch/software/uniloader/uniloader-{{ uniloader_version }}.tar.gz"
@@ -289,6 +293,30 @@
         name: uniloader-audiovault
         enabled: true
       when: audiovault
+
+
+    - name: Open port {{ av_port }}
+      command: iptables -A INPUT -j ACCEPT -p tcp --dport {{ av_port }} 
+      ignore_errors: true
+      register: port_check
+      when:  audiovault
+
+    - name: Save iptables rules (Debian/Ubuntu)
+      command: iptables-save > /etc/iptables/rules.v4
+      when: ansible_os_family == "Debian" and port_check.rc != 0 and audiovault
+
+    - name: Save iptables rules (CentOS/RHEL)
+      command: iptables-save > /etc/sysconfig/iptables
+      when: ansible_os_family == "RedHat"  and port_check.rc != 0 and audiovault
+
+    - name: Restart audiovault at 1AM so it picks up any new certs
+      ansible.builtin.cron:
+        name: "restart_audiovault_daily"
+        minute: "1"
+        hour: "1"
+        job: "systemctl restart uniloader-audiovault"
+      when: audiovault
+
 
 
     # resync sessions at midnight

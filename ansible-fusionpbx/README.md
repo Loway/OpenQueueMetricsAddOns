@@ -1,5 +1,4 @@
-Setting up and managing a FusionPBX/QueueMetrics link with Ansible
-==================================================================
+# Setting up and managing a FusionPBX/QueueMetrics link with Ansible
 
 
 ```
@@ -9,8 +8,7 @@ Licence: Public domain
 ```
 See the [changelog](CHANGELOG.md).
 
-Project description
--------------------
+## Project description
 
 You have a FusionPBX system with multiple tenants, based on Debian 12, and you want to set up and manage
 them on multiple QueueMetrics Live instances, one for each of the tenants you define (so you may have some tenants using QML, and some that don't use it, as you best see fit). 
@@ -34,8 +32,7 @@ This Ansible task does the following:
   when the system is created.
 
 
-Requirements
-------------
+## Requirements
 
 * Ansible 2+ (tested with 2.14)
 * FusionPBX 5.3 or newer
@@ -47,7 +44,7 @@ Requirements
 
 
 
-**Downloading for Debian**
+### Downloading for Debian
 
     apt-get update
     apt-get install ansible git tar wget
@@ -56,7 +53,7 @@ Requirements
     cd OpenQueueMetricsAddOns/ansible-fusionpbx
 
 
-**Downloading for CentOS/Rocky Linux**
+### Downloading for CentOS/Rocky Linux
 
     yum install ansible git tar wget
 
@@ -64,7 +61,7 @@ Requirements
     cd OpenQueueMetricsAddOns/ansible-fusionpbx
 
 
-
+### Instance configuration
 
 
 On each QueueMetrics instance, the following settings must be made before starting:
@@ -95,7 +92,7 @@ On each QueueMetrics instance, the following settings must be made before starti
 For AudioVault, also add:
 
     audio.server=it.loway.app.queuemetrics.callListen.listeners.JsonListener
-    audio.jsonlistener.url=https://fusionpbx.company.my/audiovault/search/?tenant=tenant1.popk.net
+    audio.jsonlistener.url=https://tenant1.mysrv.my/audiovault/search/?tenant=tenant1.mysrv.my
     audio.jsonlistener.method=POST
     audio.jsonlistener.searchtoken=x1x1secret
     audio.jsonlistener.verbose=false
@@ -104,8 +101,7 @@ For AudioVault, also add:
 
 
 
-Usage istructions
------------------
+## Usage istructions
 
 First define your set of FusionPBX systems in `ansible-hosts`. You can go from one server to as many as you want.
 
@@ -172,9 +168,43 @@ For each client, apart from the usual credentials, we have the values:
 - `av_secret` - the authorization code to be used to access AudioVault for this tenant
 - `refresh` - when you add a new value, automatic configuration will be forced. As this is cached, it is important that you do not recycle the same refresh value - you could e.g. use a progressive date like `250516a` to avoid duplicates.
 
+### AudioVault
 
-Running
--------
+You can run AudioVault in two ways:
+
+- having it answer in HTTP, binding it so that it is accessible from `localhost` only. This presumes that you will put an HTTPS proxy in front of it. This option gives you the highest flexibility in terms of logging, rewriting, etc.
+- having it serve answers in HTTPS directly. Your FusionPBX server will already have (and likely renew automatically) an HTTPS wildcard certificate. We can use it as well ourselves, to start a new server on port 4040!
+
+For this latter option use:
+
+    audiovault: True
+    av_host: ""
+    av_port: "4040"
+    av_public_url: "https://tenant1.srv.my"
+    av_path: "file:/var/lib/freeswitch/recordings/%%TE/archive/%%YY/%%ME/%%DD"
+    av_token: "CHANGEME"
+    av_cert: "/etc/dehydrated/certs/popk.net/fullchain.pem"
+    av_cert_key: "/etc/dehydrated/certs/popk.net/privkey.pem"
+
+Note that if the certificate is a wildcard, you can then use _any name_ that points to that server, and it will just work!
+
+
+If you want to use a proxy instead, configure it like:
+
+    audiovault: True
+    av_host: "localhost"
+    av_port: "4040"
+    av_public_url: "https://tenant1.srv.my"
+    av_path: "file:/var/lib/freeswitch/recordings/%%TE/archive/%%YY/%%ME/%%DD"
+    av_token: "CHANGEME"
+    av_cert: ""
+    av_cert_key: ""
+
+This way, the server will ignore any calls not coming from the same server.
+
+
+
+## Running
 
 To run the script:
 - if you want to install on a remote server, first edit the file `ansible-hosts` to decide on which server(s) to install. 
@@ -189,21 +219,16 @@ To run the script, just run:
 
     ./run.sh
 
-That is just a shortcut for a full Ansible commandline like the following:
 
-		ansible-playbook -i ansible-hosts \
-		       --private-key ~/zebraman_key -u zebraman --become-user root \
-		       fsw.yml
+Every time you change the configuration (eg add a new tenant), you run this script again.
 
-This logs in into each box as user "zebraman", becomes root, and then performs all needed changes. As the script is idempotent, it will only perform changes when needed - usually when you make changes to the configuration.
 
-Authors
--------
+
+## Authors
 
 Loway SA 
 
-See also
---------
+## See also
 
 * [QueueMetrics home page](https://www.queuemetrics.com)
 * [FusionPBX home page](https://www.fusionpbx.com/)

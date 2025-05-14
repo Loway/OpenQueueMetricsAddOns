@@ -16,7 +16,9 @@ Type=simple
 Nice=15
 KillMode=process
 ExecStart=/usr/bin/uniloader av serve \
-              --bind-to "{{ av_port }}" --public-url "{{ av_public_url }}" \
+              --bind-to "{{ av_host}}:{{ av_port }}" \
+              --certificate '{{ av_cert }}' --certificate-key '{{ av_cert_key }}' \
+              --public-url "{{ av_public_url }}" \
               --path '{{ av_path }}' --token "{{ av_token }}" --tenants "{{ av_tenants }}"
 RestartSec=1
 Restart=on-failure
