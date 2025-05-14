@@ -71,20 +71,18 @@ On each QueueMetrics instance, the following settings must be made before starti
 - The settings below are present.
 
 
-        platform.freeswitch.tenant=tenant1.popk.net
-        callfile.dir=fsw:ClueCon@127.0.0.1:8021
-
-        default.hotdesking=0
-        platform.pbx=FREESWITCH_LIVE
-
-        platform.freeswitch.use_external_ref=true
-        platform.freeswitch.verbose=true
-        platform.freeswitch.addmember=true
-        platform.freeswitch.use_external_ref=true
-        platform.freeswitch.agentChannel={qm_queue=${q},origination_caller_id_number=1973,origination_caller_id_name=QM-${q},enable_early_media=true}user/${num}
-        platform.freeswitch.destinationNumber=${num}
-        platform.freeswitch.spychannel={qm_ignore=1,origination_caller_id_name=Spy_q${q}_q${a}}user/${num}
-        platform.freeswitch.spycmd=queue_dtmf:w${spymode}@500,eavesdrop:${callid}
+    platform.freeswitch.tenant=tenant1.popk.net
+    callfile.dir=fsw:ClueCon@127.0.0.1:8021
+    default.hotdesking=0
+    platform.pbx=FREESWITCH_LIVE
+    platform.freeswitch.use_external_ref=true
+    platform.freeswitch.verbose=true
+    platform.freeswitch.addmember=true
+    platform.freeswitch.use_external_ref=true
+    platform.freeswitch.agentChannel={qm_queue=${q},origination_caller_id_number=1973,origination_caller_id_name=QM-${q},enable_early_media=true}user/${num}
+    platform.freeswitch.destinationNumber=${num}
+    platform.freeswitch.spychannel={qm_ignore=1,origination_caller_id_name=Spy_q${q}_q${a}}user/${num}
+    platform.freeswitch.spycmd=queue_dtmf:w${spymode}@500,eavesdrop:${callid}
 
 
 (If you use a different IP address / connection token for your FusionPBX server, set it here).
@@ -101,7 +99,7 @@ For AudioVault, also add:
 
 
 
-## Usage istructions
+## Usage instructions
 
 First define your set of FusionPBX systems in `ansible-hosts`. You can go from one server to as many as you want.
 
@@ -201,6 +199,10 @@ If you want to use a proxy instead, configure it like:
     av_cert_key: ""
 
 This way, the server will ignore any calls not coming from the same server.
+
+If you don't want to run AudioVault, just set:
+
+    audiovault: false
 
 
 
