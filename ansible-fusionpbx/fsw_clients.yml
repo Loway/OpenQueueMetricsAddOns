@@ -1,0 +1,23 @@
+---
+# Here are all of our clients
+# name is the id of the tenant + default domain
+
+clients:
+  tenant1:
+    url:   "https://stats.srv.my/t1popk/"
+    login: "webqloader"
+    pass:  "pippo"  
+    actions: True
+    disabled: False
+    av_secret: "x1x1secret"
+    refresh: ""
+
+  tenant2:
+    url:   "https://stats.srv.my/t2popk/"
+    login: "webqloader"
+    pass:  "pluto"  
+    actions: True
+    disabled: False
+    av_secret: "x2x2secret"
+    refresh: ""
+

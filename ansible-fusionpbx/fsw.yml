@@ -5,81 +5,12 @@
   #become_method: sudo
 
 
-
-  vars:  
-    # Which version of Uniloader to use.
-    uniloader_version: "24.11.5"
-    
-    # The ESL port on Freeswitch
-    fsw_host: "127.0.0.1"
-    fsw_port: "8021"
-    fsw_auth: "ClueCon"
-
-    # Credentials to connect to Postgres DB used by Fusion
-    fusion_db: "127.0.0.1/fusionpbx?sslmode=disable"
-    fusion_login: "fusionpbx"
-    fusion_pwd: "----"
-
-    # Filters for outbound tracking
-    outbound_include_caller: ""
-    outbound_exclude_caller: ""
-    outbound_include_callee: "^9.+"
-    outbound_exclude_callee: ""
-
-    # AudioVault
-    # You have to escape all "%" characters to "%%"
-    audiovault: True
-    av_host: ""
-    av_port: "4040"
-    av_public_url: "https://tenant1.mysrv.my"
-    av_path: "file:/var/lib/freeswitch/recordings/%%TE/archive/%%YY/%%ME/%%DD"
-    av_token: "CHANGEME"
-    av_cert: "/etc/dehydrated/certs/popk.net/fullchain.pem"
-    av_cert_key: "/etc/dehydrated/certs/popk.net/privkey.pem"
-      
-    # Autoconfiguration
-    # You need to have user "robot" enabled in QmLive
-    # To always force autoconfiguration, we just remove the contents of autoconfigdir
-    autoconfiguration: True
-    autoconfigure_always: False
-    autoconfigure_agent_pwd: "v3rys3cret"
-    default_domain: "mysrv.my"    
-
-    # Here are all of our clients
-    # name is the id of the tenant + default domain
-    clients:
-      tenant1:
-        url:   "https://stats.mysr.my/t1popk/"
-        login: "webqloader"
-        pass:  "pippo"  
-        actions: True
-        disabled: False
-        av_secret: "x1x1secret"
-        refresh: ""
-
-      tenant2:
-        url:   "https://stats.mysr.my/t2popk/"
-        login: "webqloader"
-        pass:  "pluto"  
-        actions: True
-        disabled: False
-        av_secret: "x2x2secret"
-        refresh: ""
-
-
-    # Misc directories
-    #download_url: "https://downloads.loway.ch/software/uniloader/uniloader-{{ uniloader_version }}.tar.gz"
-    download_url: "https://downloads.loway.ch/beta/uniloader-{{ uniloader_version }}.tar.gz"
-    uniloader_dir: "/opt/uniloader"
-    uniloader_current_dir: "{{ uniloader_dir }}/uniloader-{{ uniloader_version }}"
-
-    datadir: "/opt/fusion-splitter-data" 
-    qlogfile: "{{ datadir }}/queuelog-synth-fsw.txt"
-    #eventsfile: "{{ datadir }}/fsw-events-agent999addedto400.txt"
-    eventsfile: "/dev/null"
-    splitterfile: "{{ datadir }}/splitter.json"
-    av_tenants: "{{ datadir }}/audiovault-tenants.json"
-    autoconfigdir: "{{ datadir }}/autocfg"
+  #
+  # Edit variables in their own files
+  #
+  vars_files:
+    - fsw_vars.yml
+    - fsw_clients.yml
 
 
   tasks:

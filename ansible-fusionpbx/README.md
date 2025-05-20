@@ -103,7 +103,7 @@ For AudioVault, also add:
 
 First define your set of FusionPBX systems in `ansible-hosts`. You can go from one server to as many as you want.
 
-Then edit `fsw.yml` and edit the section `vars`:
+Then edit `fsw_vars.yml`:
 
     uniloader_version: "25.05.1"
 
@@ -136,7 +136,7 @@ The rules (regexps) to include outbound calls (with automated tracking). In the 
 
 Above, you set up autoconfiguration. If you set `autoconfiguration` to False, it won't be performed. If you set `autoconfigure_always` it will be repeated on each run, while usually it will be done just once, or when a clietnt's parameters change. You can set up a default password for your agents, so they can log in into QM; and you must define the domain name used by your FusionPBX instance. When a client is autoconfigured, a flag file to avoid further configurations is created, so you can see when it happened last.
 
-Now edit the section `clients` - the key is the name of the customer's subdomain (e.g. in this example, key `client1` would be the subdomain `client1.company.my`) so that it contains all of your QM Live instances. You can add/remove clients as needed.
+Now edit the file `fsw_clients.yml` - the key is the name of the customer's subdomain (e.g. in this example, key `client1` would be the subdomain `client1.company.my`) so that it contains all of your QM Live instances. You can add/remove clients as needed.
 
 	    clients:
 	      client1:
