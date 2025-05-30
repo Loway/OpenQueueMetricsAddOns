@@ -225,7 +225,6 @@
         enabled: true
       when: audiovault
 
-
     - name: Open port {{ av_port }}
       command: iptables -A INPUT -j ACCEPT -p tcp --dport {{ av_port }} 
       ignore_errors: true
@@ -234,11 +233,11 @@
 
     - name: Save iptables rules (Debian/Ubuntu)
       command: iptables-save > /etc/iptables/rules.v4
-      when: ansible_os_family == "Debian" and port_check.rc != 0 and audiovault
+      when: ansible_os_family == "Debian" and audiovault and port_check.rc != 0 
 
     - name: Save iptables rules (CentOS/RHEL)
       command: iptables-save > /etc/sysconfig/iptables
-      when: ansible_os_family == "RedHat"  and port_check.rc != 0 and audiovault
+      when: ansible_os_family == "RedHat" and audiovault and port_check.rc != 0
 
     - name: Restart audiovault at 1AM so it picks up any new certs
       ansible.builtin.cron:
