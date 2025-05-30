@@ -24,6 +24,23 @@
       ping:
       #remote_user: root
 
+    - name: Fail if av_cert certificate file does not exist (if set and needed)
+      ansible.builtin.fail:
+        msg: "Required av_cert file '{{ av_cert }}' does not exist"
+      when:
+        - audiovault
+        - av_cert is defined
+        - av_cert | length > 0
+        - av_cert is not file
+
+    - name: Fail if av_cert_key certificate file does not exist (if set and needed)
+      ansible.builtin.fail:
+        msg: "Required av_cert_key file '{{ av_cert_key }}' does not exist"
+      when:
+        - audiovault
+        - av_cert_key is defined
+        - av_cert_key | length > 0
+        - av_cert_key is not file
 
     - name: RST
       ping: 
