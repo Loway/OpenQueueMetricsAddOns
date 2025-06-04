@@ -202,7 +202,7 @@
       template: 
         src: ./files/splitter.json.j2
         dest: "{{ splitterfile }}"
-        mode: 0766
+        mode: 0666
       notify: splitter-restart
 
     - name: install uniloader-splitter systemd unit file
@@ -227,7 +227,7 @@
       template: 
         src: ./files/audiovault-tenants.json.j2
         dest: "{{ av_tenants }}"
-        mode: 0766
+        mode: 0666
       notify: audiovault-restart
       when: audiovault
 
