@@ -1,6 +1,6 @@
 ---
 # Which version of Uniloader to use.
-uniloader_version: "24.11.8"
+uniloader_version: "24.11.9"
 
 # The ESL port on Freeswitch
 fsw_host: "127.0.0.1"
