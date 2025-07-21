@@ -2,6 +2,10 @@
 [fusion]
 fusion system=k1
 
+# for localhost, remove the line above
+# and uncomment the line below:
+
+# localhost ansible_connection=local
 
 
 
