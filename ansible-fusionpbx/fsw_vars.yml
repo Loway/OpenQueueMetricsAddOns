@@ -8,6 +8,7 @@ fsw_port: "8021"
 fsw_auth: "ClueCon"
 
 # Credentials to connect to Postgres DB used by Fusion
+# - usually found in /etc/fusionpbx/config.php
 fusion_db: "127.0.0.1/fusionpbx?sslmode=disable"
 fusion_login: "fusionpbx"
 fusion_pwd: "--password--"
@@ -15,7 +16,7 @@ fusion_pwd: "--password--"
 # Filters for outbound tracking
 outbound_include_caller: ""
 outbound_exclude_caller: ""
-outbound_include_callee: "^9.+"
+outbound_include_callee: "^.+"
 outbound_exclude_callee: ""
 
 # AudioVault - Enable when needed
