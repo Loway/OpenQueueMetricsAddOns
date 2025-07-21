@@ -18,9 +18,9 @@ outbound_exclude_caller: ""
 outbound_include_callee: "^9.+"
 outbound_exclude_callee: ""
 
-# AudioVault
+# AudioVault - Enable when needed
 # You have to escape all "%" characters to "%%"
-audiovault: True
+audiovault: False 
 av_host: ""
 av_port: "4040"
 av_public_url: "https://tenant1.srv.my:4040"
