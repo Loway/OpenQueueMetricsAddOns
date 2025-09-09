@@ -1,6 +1,7 @@
 ---
 # Which version of Uniloader to use.
-uniloader_version: "24.11.9"
+# Must be >= 25.09
+uniloader_version: "25.09.1"
 
 # The ESL port on Freeswitch
 fsw_host: "127.0.0.1"
@@ -40,8 +41,8 @@ default_domain: "srv.my"
 
 
 # Misc directories
-#download_url: "https://downloads.loway.ch/software/uniloader/uniloader-{{ uniloader_version }}.tar.gz"
-download_url: "https://downloads.loway.ch/beta/uniloader-{{ uniloader_version }}.tar.gz"
+download_url: "https://downloads.loway.ch/software/uniloader/uniloader-{{ uniloader_version }}.tar.gz"
+#download_url: "https://downloads.loway.ch/beta/uniloader-{{ uniloader_version }}.tar.gz"
 uniloader_dir: "/opt/uniloader"
 uniloader_current_dir: "{{ uniloader_dir }}/uniloader-{{ uniloader_version }}"
 
