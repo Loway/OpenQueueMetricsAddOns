@@ -16,7 +16,6 @@ ExecStart=/usr/bin/uniloader fsw \
          --host "{{ fsw_host }}" --port "{{ fsw_port }}" --auth "{{ fsw_auth }}" \
          --queuelog "{{ qlogfile }}" \
          --ps-uri "{{ fusion_db }}" --ps-login "{{ fusion_login }}" --ps-pwd "{{ fusion_pwd }}" \
-                  --ps-uri "{{ fusion_db }}" --ps-login "{{ fusion_login }}" --ps-pwd "{{ fusion_pwd }}" \
          --outbound-include-caller "{{ outbound_include_caller }}" \
          --outbound-exclude-caller "{{ outbound_exclude_caller }}" \
          --outbound-include-callee "{{ outbound_include_callee }}" \
