@@ -120,12 +120,16 @@
         state: link
       when: not ul_folder.stat.exists
 
-
-
+    - name: Install uniloader-ctl script
+      template: 
+        src: ./files/uniloader-ctl.j2
+        dest: "/usr/bin/uniloader-ctl"
+        mode: 0777
+      when: not ul_folder.stat.exists
 
     # Environment checks    
     - name: Check ESL connection works
-      command: "uniloader test fsw-esl --host {{ fsw_host }} --port {{ fsw_port }} --auth {{ fsw_auth }}"
+      command: "uniloader test fsw-esl --host {{ fsw_host | quote }} --port {{ fsw_port | quote }} --auth {{ fsw_auth | quote }}"
       register: esl_result
       
     - name: Assert that the ESL check output contains the expected string
@@ -134,7 +138,7 @@
         fail_msg: "ESL connection failed"
 
     - name: Check Postgres connection works
-      command: "uniloader test postgres --ps-uri {{ fusion_db }} --ps-login {{ fusion_login }} --ps-pwd {{ fusion_pwd }}"
+      command: "uniloader test postgres --ps-uri {{ fusion_db | quote }} --ps-login {{ fusion_login | quote }} --ps-pwd {{ fusion_pwd | quote  }}"
       register: pg_result
       
     - name: Assert that the ESL check output contains the expected string
@@ -278,7 +282,7 @@
         name: "sync_agent_sessions"
         minute: "1"
         hour: "0"
-        job: "/usr/bin/uniloader fs-queue sync --host {{ fsw_host }} --port {{ fsw_port }} --auth {{ fsw_auth }}"
+        job: "/usr/bin/uniloader fs-queue sync --host {{ fsw_host | quote }} --port {{ fsw_port | quote }} --auth {{ fsw_auth | quote }}"
 
 
   #  - name: Interrompi il playbook se la condizione è vera
