@@ -13,15 +13,15 @@ Type=simple
 Nice=15
 KillMode=process
 ExecStart=/usr/bin/uniloader fsw \
-         --host "{{ fsw_host }}" --port "{{ fsw_port }}" --auth "{{ fsw_auth }}" \
-         --queuelog "{{ qlogfile }}" \
-         --ps-uri "{{ fusion_db }}" --ps-login "{{ fusion_login }}" --ps-pwd "{{ fusion_pwd }}" \
-         --outbound-include-caller "{{ outbound_include_caller }}" \
-         --outbound-exclude-caller "{{ outbound_exclude_caller }}" \
-         --outbound-include-callee "{{ outbound_include_callee }}" \
-         --outbound-exclude-callee "{{ outbound_exclude_callee }}" \
+         --host {{ fsw_host | quote }} --port {{ fsw_port | quote }} --auth {{ fsw_auth | quote }} \
+         --queuelog {{ qlogfile | quote }} \
+         --ps-uri {{ fusion_db | quote }} --ps-login {{ fusion_login | quote }} --ps-pwd {{ fusion_pwd | quote }} \
+         --outbound-include-caller {{ outbound_include_caller | quote }} \
+         --outbound-exclude-caller {{ outbound_exclude_caller | quote }} \
+         --outbound-include-callee {{ outbound_include_callee | quote }} \
+         --outbound-exclude-callee {{ outbound_exclude_callee | quote }} \
          --shorten-domain 1  \
-         --events "{{ eventsfile }}"
+         --events {{ eventsfile | quote }}
 
 RestartSec=1
 Restart=on-failure

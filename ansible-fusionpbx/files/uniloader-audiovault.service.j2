@@ -16,10 +16,10 @@ Type=simple
 Nice=15
 KillMode=process
 ExecStart=/usr/bin/uniloader av serve \
-              --bind-to "{{ av_host}}:{{ av_port }}" \
-              --certificate '{{ av_cert }}' --certificate-key '{{ av_cert_key }}' \
-              --public-url "{{ av_public_url }}" \
-              --path '{{ av_path }}' --token "{{ av_token }}" --tenants "{{ av_tenants }}"
+              --bind-to {{ '%s:%s' | format(av_host, av_port) | quote }} \
+              --certificate {{ av_cert | quote }} --certificate-key {{ av_cert_key | quote }} \
+              --public-url {{ av_public_url | quote }} \
+              --path {{ av_path | quote }} --token {{ av_token | quote }} --tenants {{ av_tenants | quote }}
 RestartSec=1
 Restart=on-failure
 

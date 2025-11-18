@@ -1,0 +1,105 @@
+#! /bin/bash
+#
+# 
+
+UNILOADER=/usr/bin/uniloader
+ESLHOST={{ fsw_host | quote }}
+ESLPORT={{ fsw_port | quote }}
+ESLAUTH={{ fsw_auth | quote }}
+PSURI={{ fusion_db | quote }}
+PSLOGIN={{ fusion_login | quote }}
+PSPWD={{ fusion_pwd | quote }}
+DATADIR={{ datadir | quote }}
+QLOG={{ qlogfile | quote }}
+NOW=$(date +%y%m%d-%H%M)
+
+
+case "$1" in
+
+domains)
+        echo "Domains configured on this server:"
+        echo "----------------------------------" 
+        du --max-depth=1 -h /var/lib/freeswitch/recordings/
+	echo
+      ;;       
+
+sync)
+	echo "Syncing queue information"
+	${UNILOADER} fs-queue sync --host "${ESLHOST}" --port "${ESLPORT}" --auth "${ESLAUTH}"
+      ;;
+
+dumpstate)
+	echo "Dumping inner state of daemon uniloader-fusion"
+	${UNILOADER} fs-queue daemon-status --host "${ESLHOST}" --port "${ESLPORT}" --auth "${ESLAUTH}"
+	journalctl -f -u uniloader-freeswitch.service
+	;;
+
+logs)
+	echo "Tailing current state of services"
+	echo ""
+	journalctl -f -u uniloader-freeswitch.service -u uniloader-splitter.service
+	;;
+
+qlog)
+	echo "Tailing aggregate queue_log file at ${QLOG}"
+	echo
+	tail -f "${QLOG}"
+	;;
+
+svcstate)
+	systemctl status uniloader-freeswitch.service uniloader-splitter.service uniloader-audiovault.service
+	;;
+
+trace)	
+	TRACEDIR="${DATADIR}/traces"
+	mkdir -p "${TRACEDIR}"
+	TRACEFILE="${TRACEDIR}/evt_${NOW}_trace.txt"
+        QLOGFILE="${TRACEDIR}/evt_${NOW}_qlog.txt"
+	echo "Now running event trace files:"
+	echo " - ${TRACEFILE}"
+	echo " - ${QLOGFILE}"
+	echo ""
+	echo "Press Ctrl+C to terminate."
+	echo
+
+	${UNILOADER} fsw --host "${ESLHOST}" --port "${ESLPORT}" --auth "${ESLAUTH}" \
+             --ps-uri "${PSURI}"  --ps-login "${PSLOGIN}" --ps-pwd "${PSPWD}" \
+             --shorten-domain 1 --allevents \
+             --events "${TRACEFILE}" --queuelog "${QLOGFILE}"
+ 	;;
+
+*)
+	cat << "EOF"	
+Use: 
+     $0 [domains|sync|dumpstate|trace]
+     $0 [logs|qlog]
+
+Actions:
+
+- domain:    prints all configured domains and the size of their recordings
+- sync:      outputs the current presence state (all agents on all queues) on the queue_log
+- dumpstate: prints the current state of uniloader-freeswitch and shows
+             the journal. Press Ctrl-C to stop.
+- svcstate:  prints the current state for all services
+- trace:     creates trace files to be sent to Loway (events and logs). 
+	     This can be run in parallel to an existing uniloader-freeswitch server.
+	     The command displays where they will be created. 
+	     Once the trace is over, press Ctrl-C to interrupt.
+             Make sure that there are no external calls running apart from the test
+             you should take, as logs are extremely verbose and hard to understand.
+
+Logs:
+
+- logs:      tails the aggregate logs for services uniloader-freeswitch and uniloader-splitter
+- qlog:      tails the aggregate queue_log file for all tenants
+
+
+
+EOF
+	exit 1
+
+esac
+
+
+
+

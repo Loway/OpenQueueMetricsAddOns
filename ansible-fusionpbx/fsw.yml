@@ -125,8 +125,7 @@
         src: ./files/uniloader-ctl.j2
         dest: "/usr/bin/uniloader-ctl"
         mode: 0777
-      when: not ul_folder.stat.exists
-
+      
     # Environment checks    
     - name: Check ESL connection works
       command: "uniloader test fsw-esl --host {{ fsw_host | quote }} --port {{ fsw_port | quote }} --auth {{ fsw_auth | quote }}"

@@ -11,10 +11,10 @@ Type=simple
 Nice=15
 KillMode=process
 ExecStart=/usr/bin/uniloader \
-    --src {{ qlogfile }}  \
-    upload --uri "{{ '' }}"  \
-    --noActions \
-    --splitter {{ splitterfile }}
+       --src {{ qlogfile | quote }}  \
+    upload --uri {{ '' | quote }}  \
+       --noActions \
+       --splitter {{ splitterfile | quote }}
 
 RestartSec=1
 Restart=on-failure
