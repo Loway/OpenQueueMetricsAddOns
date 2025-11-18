@@ -16,10 +16,10 @@ NOW=$(date +%y%m%d-%H%M)
 
 case "$1" in
 
-domains)
-        echo "Domains configured on this server:"
-        echo "----------------------------------" 
-        du --max-depth=1 -h /var/lib/freeswitch/recordings/
+tenants)
+        echo "Tenants configured on this server:"
+        echo "" 
+        cd /var/lib/freeswitch/recordings/ && du --max-depth=1 -h . | head -n -1
 	echo
       ;;       
 
@@ -69,31 +69,54 @@ trace)
  	;;
 
 *)
-	cat << "EOF"	
+	cat << EOF	
 Use: 
-     $0 [domains|sync|dumpstate|trace]
+     $0 [tenants|sync|dumpstate|trace]
      $0 [logs|qlog]
 
-Actions:
+ACTIONS
+~~~~~~~
 
-- domain:    prints all configured domains and the size of their recordings
-- sync:      outputs the current presence state (all agents on all queues) on the queue_log
-- dumpstate: prints the current state of uniloader-freeswitch and shows
-             the journal. Press Ctrl-C to stop.
-- svcstate:  prints the current state for all services
-- trace:     creates trace files to be sent to Loway (events and logs). 
-	     This can be run in parallel to an existing uniloader-freeswitch server.
-	     The command displays where they will be created. 
-	     Once the trace is over, press Ctrl-C to interrupt.
-             Make sure that there are no external calls running apart from the test
-             you should take, as logs are extremely verbose and hard to understand.
+- tenants   
+ 
+Prints all configured domains and the size of their recordings
 
-Logs:
+- sync      
 
-- logs:      tails the aggregate logs for services uniloader-freeswitch and uniloader-splitter
-- qlog:      tails the aggregate queue_log file for all tenants
+Outputs the current presence state (all agents on all queues) on the queue_log
 
+- dumpstate 
 
+Prints the current state of uniloader-freeswitch and shows the journal. 
+Press Ctrl-C to stop.
+
+- svcstate
+
+Prints the current state for all services
+
+- trace
+
+Creates trace files to be sent to Loway (events and logs). 
+This can be run in parallel to an existing uniloader-freeswitch server.
+The command displays where they will be saved. 
+Once the trace is over, press Ctrl-C to interrupt.
+
+Make sure that there are no external calls running apart from the test
+you should take, as logs are extremely verbose and hard to understand.
+
+LOG FILES
+~~~~~~~~~
+
+- logs      
+
+Tails the aggregate logs for services uniloader-freeswitch and 
+uniloader-splitter.
+Press Ctrl-C to stop.
+
+- qlog
+
+Tails the aggregate queue_log file for all tenants.
+Press Ctrl-C to stop.
 
 EOF
 	exit 1
