@@ -1,0 +1,14 @@
+[Unit]
+Description=QueueMetrics → Slack (agent pause/unpause) notifier
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/qm-notifier
+ExecStart=/usr/bin/node /opt/qm-slack-notifier/slack-notifier.js
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
