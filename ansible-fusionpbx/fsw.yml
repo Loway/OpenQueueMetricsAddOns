@@ -9,8 +9,8 @@
   # Edit variables in their own files
   #
   vars_files:
-    - fsw_vars.yml
-    - fsw_clients.yml
+    - fsw_vars.private
+    - fsw_clients.private
 
 
   tasks:
@@ -120,10 +120,10 @@
         state: link
       when: not ul_folder.stat.exists
 
-    - name: Install uniloader-ctl script
+    - name: Install qm-fsw-ctl script
       template: 
-        src: ./files/uniloader-ctl.j2
-        dest: "/usr/bin/uniloader-ctl"
+        src: ./files/qm-fsw-ctl.j2
+        dest: "/usr/bin/qm-fsw-ctl"
         mode: 0777
       
     # Environment checks    

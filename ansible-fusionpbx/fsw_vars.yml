@@ -1,7 +1,7 @@
 ---
 # Which version of Uniloader to use.
 # Must be >= 25.09
-uniloader_version: "25.09.1"
+uniloader_version: "25.09.6"
 
 # The ESL port on Freeswitch
 fsw_host: "127.0.0.1"
@@ -14,7 +14,14 @@ fusion_db: "127.0.0.1/fusionpbx?sslmode=disable"
 fusion_login: "fusionpbx"
 fusion_pwd: "--password--"
 
-# Filters for outbound tracking
+# Filters for outbound tracking. This is applied only to
+# the actual agent phone code, not on the "Agent/domain-"
+# part.
+#
+# e.g. 
+# - "^.+" -> not blank
+# - "^.{4,6}$" -> any sequence between 4 and 6 chars
+#
 outbound_include_caller: ""
 outbound_exclude_caller: ""
 outbound_include_callee: "^.+"
