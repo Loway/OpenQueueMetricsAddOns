@@ -9,8 +9,8 @@
   # Edit variables in their own files
   #
   vars_files:
-    - fsw_vars.private
-    - fsw_clients.private
+    - fsw_vars.yml
+    - fsw_clients.yml
 
 
   tasks:
