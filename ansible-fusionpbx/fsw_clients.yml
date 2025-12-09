@@ -1,10 +1,11 @@
 ---
 # Here are all of our clients, each matching one tenant of the PBX.
 #
-# The name (e.g. "client1" here) is the id of the tenant + default domain
-# unless you are in shorten-domain mode, where it's just the prefix.
+# The name (e.g. "client1" here) is the id of the tenant, that is the part
+# preceding "default_domain".
 #
-# To force reconfiguration (e.g. to import new agents), set a new value in "refresh".
+# To force reconfiguration (e.g. to import new agents), set a new value in "refresh"
+# and run the script again.
 #
 
 clients:
