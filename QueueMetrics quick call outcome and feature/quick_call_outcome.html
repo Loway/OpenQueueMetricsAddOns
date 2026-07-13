@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QueueMetrics quick outcome panel</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --border: #d0d5dd;
+      --primary: #155eef;
+      --primary-hover: #004eeb;
+      --ok-bg: #dcfae6;
+      --ok: #05603a;
+      --err-bg: #fee4e2;
+      --err: #b42318;
+      --info-bg: #eff8ff;
+      --info: #175cd3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 14px;
+    }
+
+    .panel {
+      width: min(680px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 14px 35px rgba(16, 24, 40, 0.12);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.2;
+    }
+
+    .call-ref {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    form {
+      padding: 18px 20px 20px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font-size: 16px;
+      padding: 10px 11px;
+    }
+
+    select,
+    input {
+      min-height: 46px;
+    }
+
+    select:focus,
+    input:focus,
+    button:focus {
+      outline: 3px solid rgba(21, 94, 239, 0.20);
+      outline-offset: 2px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--primary-hover); }
+
+    button:disabled {
+      opacity: 0.62;
+      cursor: wait;
+    }
+
+    .status {
+      display: none;
+      margin-top: 14px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+
+    .status.ok {
+      display: block;
+      color: var(--ok);
+      background: var(--ok-bg);
+    }
+
+    .status.err {
+      display: block;
+      color: var(--err);
+      background: var(--err-bg);
+    }
+
+    .status.info {
+      display: block;
+      color: var(--info);
+      background: var(--info-bg);
+    }
+
+    .missing {
+      padding: 14px 20px 20px;
+      color: var(--err);
+      background: var(--err-bg);
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <section class="panel" aria-labelledby="title">
+    <div class="header">
+      <h1 id="title">Close call</h1>
+      <div class="call-ref" id="callRef">Loading call...</div>
+    </div>
+
+    <div class="missing" id="missingCall">Missing parameters.</div>
+
+    <form id="crmForm">
+      <div class="field">
+        <label for="outcome">Outcome</label>
+        <select id="outcome" required>
+          <option value="">Choose outcome</option>
+          <option value="sale">Sale</option>
+          <option value="contact">Contact made</option>
+          <option value="callback">Callback requested</option>
+          <option value="noanswer">No answer</option>
+          <option value="notint">Not interested</option>
+          <option value="wrongnum">Wrong number</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="feature">Note</label>
+        <input id="feature" type="text" autocomplete="off" placeholder="Add note" required>
+      </div>
+
+      <button id="submitBtn" type="submit">Save</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <script>
+    const CONFIG = {
+      // Add your QueueMetrics instance URL
+      qmBaseUrl: "https://my.queuemetrics-live.com/your_queuemetrics",
+      endpoint: "qm_jsonsvc_do_pbxactions.do",
+
+      // Add the API user
+      apiUsername: "robot",
+
+      // Add the API user password
+      apiPassword: "robot",
+
+      server: "",
+      urlCallIdParams: ["unique", "callid", "uid", "u"]
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function getParam(names) {
+      const params = new URLSearchParams(window.location.search);
+
+      for (const name of names) {
+        const value = params.get(name);
+        if (value) return value.trim();
+      }
+
+      return "";
+    }
+
+    function setStatus(type, message) {
+      const element = $("status");
+      element.className = "status " + type;
+      element.textContent = message;
+    }
+
+    function cleanBaseUrl(url) {
+      return String(url || "").replace(/\/+$/, "");
+    }
+
+    function authHeader() {
+      const token = btoa(CONFIG.apiUsername + ":" + CONFIG.apiPassword);
+
+      return {
+        Authorization: "Basic " + token
+      };
+    }
+
+    function currentCallId() {
+      return getParam(CONFIG.urlCallIdParams);
+    }
+
+    function buildRequest(action, outcomeValue) {
+      const callid = currentCallId();
+
+      if (!callid) {
+        throw new Error("Missing parameters.");
+      }
+
+      const url = cleanBaseUrl(CONFIG.qmBaseUrl) + "/" + CONFIG.endpoint;
+
+      const payload = {
+        action: action,
+        callid: callid,
+        outcome: outcomeValue,
+        server: CONFIG.server
+      };
+
+      return {
+        url: url,
+        requestOptions: {
+          method: "POST",
+          headers: Object.assign(
+            {
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            },
+            authHeader()
+          ),
+          body: JSON.stringify(payload),
+          credentials: "omit"
+        }
+      };
+    }
+
+    async function sendPreparedRequest(prepared) {
+      const response = await fetch(prepared.url, prepared.requestOptions);
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        throw new Error("HTTP " + response.status + ": " + responseText);
+      }
+
+      return responseText;
+    }
+
+    function init() {
+      const callid = currentCallId();
+
+      $("callRef").textContent = callid
+        ? "Call ID: " + callid
+        : "No call ID received";
+
+      $("missingCall").style.display = callid ? "none" : "block";
+      $("submitBtn").disabled = !callid;
+    }
+
+    $("crmForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const outcome = $("outcome").value.trim();
+      const feature = $("feature").value.trim();
+
+      if (!outcome || !feature || !currentCallId()) {
+        setStatus("err", "Missing parameters.");
+        return;
+      }
+
+      $("submitBtn").disabled = true;
+      setStatus("info", "Saving...");
+
+      try {
+        const outcomeRequest = buildRequest("calloutcome", outcome);
+        const featureRequest = buildRequest("addfeature", feature);
+
+        await sendPreparedRequest(outcomeRequest);
+        await sendPreparedRequest(featureRequest);
+
+        setStatus("ok", "Saved.");
+        $("outcome").value = "";
+        $("feature").value = "";
+      } catch (error) {
+        setStatus("err", "Missing parameters.");
+      } finally {
+        $("submitBtn").disabled = false;
+      }
+    });
+
+    init();
+  </script>
+
+</body>
+</html>
