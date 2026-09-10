@@ -42,6 +42,15 @@ This Ansible task does the following:
 * One or more QueueMetrics Live instances
 
 
+### What you need before you start
+
+- At least one FusionPBX tenant is active, and it has at least one queue defined. 
+- Make sure your QML instance is up and running, and you can access it
+- Its `robot` user is enabled and configured wit the right keys (see below)
+- Check the full name of your tenant as it appears in `/var/lib/freeswitch/recordings/`. All tenants must be called something like `tenant1.domain.my` - `tenant1` is the tenant name, `domain.my` the default domain for all system. 
+- You know the password that is used by FusionPBX to connect to its database. You can usually find it in `/etc/fusionpbx/config.php`.
+
+*Tip:* On your first run, do not bother to configure AudioVault and inbound/outbound inclusion rules; just make sure that data is created correctly (check the contents of  `/opt/fusion-splitter-data/queuelog-synth-fsw.txt`) and then uploaded correctly to your QML instance. 
 
 
 ### Downloading for Debian
@@ -66,7 +75,7 @@ This Ansible task does the following:
 
 On each QueueMetrics instance, the following settings must be made before starting:
 
-- User `robot` is enabled to allow remote configuration and has security keys `USR_QUEUE USR_AGENT USRADMIN`.
+- User `robot` is enabled to allow remote configuration and has security keys `USR_QUEUE USR_AGENT USRADMIN`. It uses the same password as webqloader.
 - An outbound queue named `OUTBOUND` is added
 - The settings below are present.
 
