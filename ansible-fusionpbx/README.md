@@ -45,12 +45,13 @@ This Ansible task does the following:
 ### What you need before you start
 
 - At least one FusionPBX tenant is active, and it has at least one queue defined. 
-- Make sure your QML instance is up and running, and you can access it
-- Its `robot` user is enabled and configured wit the right keys (see below)
+- Make sure your QML instance is up and running, and you can access it as `demoadmin`. It must be configured as explained below (system properties, user `robot` with the right keys and password, queue `OUTBOUND` added)
 - Check the full name of your tenant as it appears in `/var/lib/freeswitch/recordings/`. All tenants must be called something like `tenant1.domain.my` - `tenant1` is the tenant name, `domain.my` the default domain for all system. 
 - You know the password that is used by FusionPBX to connect to its database. You can usually find it in `/etc/fusionpbx/config.php`.
 
-*Tip:* On your first run, do not bother to configure AudioVault and inbound/outbound inclusion rules; just make sure that data is created correctly (check the contents of  `/opt/fusion-splitter-data/queuelog-synth-fsw.txt`) and then uploaded correctly to your QML instance. 
+*Tip:* On your first run, do not bother to configure AudioVault and inbound/outbound inclusion rules; just make sure that data is created correctly (check the contents of  `/opt/fusion-splitter-data/queuelog-synth-fsw.txt`) and then uploaded correctly to your QML instance. If you ever need to force a reconfiguration of a client, just increment its `refresh` field.
+
+
 
 
 ### Downloading for Debian
